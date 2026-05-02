@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-global-error-handler-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="ERROR">
+        <property name="code" expression="get-property('errorCode')"/>
+        <property name="message" expression="get-property('errorMessage')"/>
+    </log>
+
+    <filter xpath="get-property('errorCode') = 'TOKEN_GENERATION_FAILED'">
+        <then>
+            <property name="HTTP_SC" value="401" scope="axis2"/>
+        </then>
+    </filter>
+
+    <filter xpath="get-property('errorCode') = 'INVALID_OTP' or get-property('errorCode') = 'SUBSCRIPTION_NOT_FOUND'">
+        <then>
+            <property name="HTTP_SC" value="404" scope="axis2"/>
+        </then>
+    </filter>
+
+    <filter xpath="get-property('errorCode') = 'SUBSCRIPTION_ALREADY_EXISTS'">
+        <then>
+            <property name="HTTP_SC" value="409" scope="axis2"/>
+        </then>
+    </filter>
+
+    <filter xpath="
+        get-property('errorCode') = 'UNSUPPORTED_COUNTRY'
+        or get-property('errorCode') = 'CHALLENGE_GENERATE_FAILED'
+        or get-property('errorCode') = 'CHALLENGE_VALIDATE_FAILED'
+        or get-property('errorCode') = 'SUBSCRIPTION_FAILED'
+        or get-property('errorCode') = 'UNSUBSCRIPTION_FAILED'
+        or get-property('errorCode') = 'SMS_SEND_FAILED'
+    ">
+        <then>
+            <property name="HTTP_SC" value="400" scope="axis2"/>
+        </then>
+    </filter>
+
+    <payloadFactory media-type="json">
+        <format>{"error":{"code":"$1","message":"$2"}}</format>
+        <args>
+            <arg evaluator="xml" expression="get-property('errorCode')"/>
+            <arg evaluator="xml" expression="get-property('errorMessage')"/>
+        </args>
+    </payloadFactory>
+
+    <respond/>
+
+</sequence>

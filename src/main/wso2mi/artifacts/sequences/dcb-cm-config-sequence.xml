@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- dcb-cm-config-sequence – Cameroun / Orange -->
+<sequence name="dcb-cm-config-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <!-- <property name="alpha3Country" value="CMR" scope="default"/>
+    <property name="orangeMCO"
+              expression="get-property('system','orange.cm.mco')" scope="default"/>
+    <property name="orangeService"
+              expression="get-property('system','orange.cm.service')" scope="default"/>
+    <property name="orangePartnerId"
+              expression="get-property('system','orange.cm.partner.id')" scope="default"/>
+    <property name="orangeBasicAuth"
+              expression="get-property('system','orange.cm.basic.auth.path')" scope="default"/>
+    <property name="orangeTokenRelPath"
+              expression="get-property('system','orange.cm.token.path')" scope="default"/>
+    <property name="orangeChallengeRelPath"
+              expression="get-property('system','orange.cm.challenge.path')" scope="default"/>
+    <property name="orangeSubRelPath"
+              expression="get-property('system','orange.cm.sub.path')" scope="default"/>
+    <property name="orangeSmsRelPath"
+              expression="get-property('system','orange.cm.sms.path')" scope="default"/> -->
+
+    <property name="alpha3Country" value="CMR" scope="default"/>
+    <property name="orangeMCO" value="OCM" scope="default"/>
+    <property name="orangeService" value="BRASTORNE" scope="default"/>
+    <property name="orangePartnerId" value="PDKSUB" scope="default"/>
+    <property name="orangeBasicAuth" value="dGVzdDp0ZXN0" scope="default"/>
+    <property name="orangeTokenRelPath" value="/oauth/v3/token" scope="default"/>
+    <property name="orangeChallengeRelPath" value="/challenge/v1/challenges" scope="default"/>
+    <property name="orangeSubRelPath" value="/payment/v1/digipay_sub/productOrder" scope="default"/>
+    <property name="orangeSmsRelPath" value="/smsmessaging/service/mea/v1" scope="default"/>
+
+    <log category="INFO">
+        <property name="message" value="dcb-cm-config-sequence - CMR configuré"/>
+        <property name="service" expression="$ctx:orangeService"/>
+        <property name="mco" expression="$ctx:orangeMCO"/>
+    </log>
+
+</sequence>

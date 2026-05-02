@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/subs/v1" name="SubscriptionAPI_v1"
+     xmlns="http://ws.apache.org/ns/synapse">
+
+    <!-- POST /subs/v1/subscribe → souscription -->
+    <resource methods="POST" uri-template="/subscribe">
+        <inSequence>
+            <sequence key="dcb-orange-cm-subscription-sequence"/>
+        </inSequence>
+        <faultSequence>
+            <sequence key="dcb-subs-fault-sequence"/>
+        </faultSequence>
+    </resource>
+
+    <!-- GET /subs/v1/status/{subscriptionId} → statut -->
+    <resource methods="GET" uri-template="/status/{subscriptionId}">
+        <inSequence>
+            <sequence key="dcb-orange-cm-subscription-status-sequence"/>
+        </inSequence>
+        <faultSequence>
+            <sequence key="dcb-subs-fault-sequence"/>
+        </faultSequence>
+    </resource>
+
+    <!-- DELETE /subs/v1/unsub/{subscriptionId} → désouscription -->
+    <resource methods="DELETE" uri-template="/unsub/{subscriptionId}">
+        <inSequence>
+            <sequence key="dcb-orange-cm-unsubscription-sequence"/>
+        </inSequence>
+        <faultSequence>
+            <sequence key="dcb-subs-fault-sequence"/>
+        </faultSequence>
+    </resource>
+
+</api>

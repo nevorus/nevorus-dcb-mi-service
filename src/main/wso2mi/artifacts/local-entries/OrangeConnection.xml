@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    OrangeConnection
+    Connexion HTTP vers l'API Orange (via HTTP Connector).
+    MODE TEST  : baseUrl = https://gateway.sunu-it.com
+    MODE PROD  : baseUrl = https://api.orange.com
+    Changer uniquement cette valeur pour switcher d'env.
+-->
+<localEntry key="OrangeConnection" xmlns="http://ws.apache.org/ns/synapse">
+    <http.init>
+        <name>OrangeConnection</name>
+        <connectionType>HTTPS</connectionType>
+        <baseUrl>https://gateway.sunu-it.com</baseUrl>
+        <authType>None</authType>
+    </http.init>
+</localEntry>

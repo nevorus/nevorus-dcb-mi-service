@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-orange-cm-generate-challenge-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <!-- EXTRACT JSON PROPERLY -->
+    <property name="country" expression="json-eval($.challenge.country)" scope="default" type="STRING"/>
+    <property name="operator" expression="json-eval($.challenge.operator)" scope="default" type="STRING"/>
+
+    <log category="INFO">
+        <property name="START" value="dcb-orange-cm-generate-challenge-sequence"/>
+        <property name="country" expression="get-property('country')"/>
+        <property name="operator" expression="get-property('operator')"/>
+    </log>
+
+    <sequence key="dcb-country-mapping-sequence"/>
+    <sequence key="dcb-mock-token-sequence"/>
+    <!--<sequence key="dcb-orange-generate-token-sequence"/>-->
+
+    <!-- Construire les inputs avec confirmationCode via script -->
+    <script language="js"><![CDATA[
+    var payload = mc.getPayloadJSON();
+    var inputs  = (payload.challenge && payload.challenge.inputs) ? payload.challenge.inputs : [];
+    var hasCC   = false;
+    for (var i = 0; i < inputs.length; i++) {
+        if (inputs[i].type === "confirmationCode") { hasCC = true; break; }
+    }
+    if (!hasCC) inputs.splice(1, 0, {"type": "confirmationCode", "value": ""});
+    mc.setProperty("inputsSud", JSON.stringify(inputs));
+    ]]></script>
+
+    <!-- Construire le payload sud -->
+    <payloadFactory media-type="json">
+        <format>{
+            "challenge": {
+            "method": "OTP-SMS-AUTH",
+            "country": "$1",
+            "service": "$2",
+            "partnerId": "$3",
+            "inputs": $4
+            }
+            }</format>
+        <args>
+            <arg evaluator="xml" expression="$ctx:alpha3Country"/>
+            <arg evaluator="xml" expression="$ctx:orangeService"/>
+            <arg evaluator="xml" expression="$ctx:orangePartnerId"/>
+            <arg evaluator="json" expression="$ctx:inputsSud"/>
+        </args>
+    </payloadFactory>
+
+    <log category="INFO">
+        <message>dcb-orange-cm-generate-challenge-sequence - Appel Orange challenge</message>
+        <property name="path" expression="get-property('orangeChallengeRelPath')"/>
+    </log>
+    <log category="INFO">
+        <property name="payloadSud" expression="json-eval($)"/>
+    </log>
+
+    <http.post configKey="OrangeConnection">
+        <relativePath>{$ctx:orangeChallengeRelPath}</relativePath>
+        <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"]]</headers>
+        <requestBodyType>JSON</requestBodyType>
+        <requestBodyJson>${payload}</requestBodyJson>
+    </http.post>
+
+    <script language="js"><![CDATA[
+        var loc = mc.getProperty("locationHeader");
+        var id  = (loc && loc !== "null") ? loc.split("/").pop() : "UNKNOWN";
+        mc.setVariable("challengeId", id);
+    ]]></script>
+
+    <log category="INFO">
+        <message>dcb-orange-cm-generate-challenge-sequence - SUCCES, challengeId: $ctx:challengeId</message>
+    </log>
+
+    <respond/>
+
+    <!--<property name="httpStatus"     expression="$axis2:HTTP_SC" scope="default"/>
+    <property name="locationHeader" expression="$trp:location"  scope="default"/>
+    <filter xpath="get-property('httpStatus') != '201'">
+        <then>
+            <log category="ERROR">
+                <property name="message"
+                          expression="fn:concat('dcb-orange-cm-generate-challenge-sequence - ECHEC Orange, HTTP: ', get-property('httpStatus'))"/>
+            </log>
+            <property name="errorCode" value="CHALLENGE_GENERATE_FAILED" scope="default"/>
+            <property name="errorMessage"
+                      expression="json-eval($.error.message)"
+                      scope="default"/>
+            <sequence key="dcb-global-error-handler-sequence"/>
+        </then>
+    </filter>
+        <property name="HTTP_SC" value="201" scope="axis2"/>
+    <header name="Location"
+            expression="fn:concat('', $ctx:locationHeader)"
+            scope="transport"/>
+
+    <payloadFactory media-type="json">
+        <format>{
+            "challenge": {
+                "country": "$1",
+                "operator": "$2",
+                "challengeId": "$3",
+                }
+            }</format>
+        <args>
+            <arg evaluator="xml" expression="$ctx:country"/>
+            <arg evaluator="xml" expression="$ctx:operator"/>
+            <arg evaluator="xml" expression="$ctx:challengeId"/>
+        </args>
+    </payloadFactory>-->
+
+
+</sequence>

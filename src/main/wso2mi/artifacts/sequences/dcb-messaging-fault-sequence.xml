@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-messaging-fault-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="ERROR">
+        <property name="msg"           value="dcb-auth-fault-sequence – EXCEPTION NON GEREE "/>
+        <property name="ERROR_CODE"    expression="$ctx:ERROR_CODE"/>
+        <property name="ERROR_MESSAGE" expression="$ctx:ERROR_MESSAGE"/>
+        <property name="ERROR_DETAIL"  expression="$ctx:ERROR_DETAIL"/>
+        <property name="ERROR_EXCEPTION" expression="$ctx:ERROR_EXCEPTION"/>
+        <property name="httpStatus"    expression="$axis2:HTTP_SC"/>
+        <property name="http_method"   expression="$axis2:HTTP_METHOD"/>
+        <property name="request_uri"   expression="$ctx:REST_SUB_REQUEST_PATH"/>
+    </log>
+
+    <property name="errorCode" value="MESSAGING_INTERNAL_ERROR"/>
+    <property name="errorMessage" value="An unexpected error occurred in MESSAGING service"/>
+    <property name="HTTP_SC" value="500" scope="axis2"/>
+    <payloadFactory media-type="json">
+        <format>{"error":{"service":"MESSAGING","code":"$1","message":"$2"}}</format>
+        <args>
+            <arg evaluator="xml" expression="get-property('errorCode')"/>
+            <arg evaluator="xml" expression="get-property('errorMessage')"/>
+        </args>
+    </payloadFactory>
+
+    <respond/>
+
+</sequence>

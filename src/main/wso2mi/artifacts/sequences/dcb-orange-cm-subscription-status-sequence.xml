@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-orange-cm-subscription-status-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="INFO">
+        <message>dcb-orange-cm-subscription-status-sequence - START, subscriptionId: get-property('uri.var.subscriptionId')</message>
+    </log>
+    <log category="INFO">
+        <property name="dcb-orange-cm-subscription-status-sequence - START, subscriptionId: " expression="get-property('uri.var.subscriptionId')"/>
+    </log>
+
+    <property name="subscriptionId" expression="get-property('uri.var.subscriptionId')" scope="default" type="STRING"/>
+    <property name="country"    value="cm" scope="default"    type="STRING"/>
+    <sequence key="dcb-country-mapping-sequence"/>
+    <sequence key="dcb-mock-token-sequence"/>
+    <property name="orangeFullSubPath"
+              expression="fn:concat($ctx:orangeSubRelPath, '/', $ctx:subscriptionId)"
+              scope="default"
+              type="STRING"/>
+    <http.get configKey="OrangeConnection">
+        <relativePath>{$ctx:orangeFullSubPath}</relativePath>
+        <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"]]</headers>
+    </http.get>
+
+    <property name="httpStatus" expression="$axis2:HTTP_SC" scope="default"/>
+
+    <filter xpath="$ctx:httpStatus != '200'">
+        <then>
+            <respond/>
+        </then>
+    </filter>
+
+    <property name="subId"     expression="json-eval($.id)"      scope="default"             type="STRING"/>
+    <property name="subState"  expression="json-eval($.state)"   scope="default"             type="STRING"/>
+    <property name="userId"    expression="json-eval($.relatedPublicKey.id)" scope="default" type="STRING"/>
+    <property name="spId"      expression="json-eval($.relatedParty[1].id)" scope="default"  type="STRING"/>
+    <property name="productId" expression="json-eval($.orderItem.product.id)" scope="default" type="STRING"/>
+
+    <property name="periodicity" expression="json-eval($.orderItem.product.productCharacteristic[2].value)" scope="default" type="STRING"/>
+    <property name="amount" expression="json-eval($.orderItem.product.productCharacteristic[0].value)" scope="default" type="STRING"/>
+    <property name="currency" expression="json-eval($.orderItem.product.productCharacteristic[1].value)" scope="default" type="STRING"/>
+    <property name="subStartdate" expression="json-eval($.orderItem.product.productCharacteristic[3].value)" scope="default" type="STRING"/>
+    <property name="lang" expression="json-eval($.orderItem.product.productCharacteristic[6].value)" scope="default" type="STRING"/>
+
+
+    <log category="INFO">
+        <property name="dcb-orange-cm-subscription-status-sequence - SUCCES, subId: " expression="$ctx:subId"/>
+        <property name="state" expression="$ctx:subState"/>
+    </log>
+
+    <property name="HTTP_SC" value="200" scope="axis2"/>
+    <payloadFactory media-type="json">
+        <format>{
+            "subscription-id": "$1",
+            "subscription-status": "$2",
+            "user-id": "$3",
+            "sp-id": "$4",
+            "product-id": "$5",
+            "country": "$6",
+            "periodicity": "$7",
+            "amount": "$8",
+            "currency": "$9",
+            "subscription-startdate": "$10",
+            "lang": "$11",
+            "country": "$12"
+            }</format>
+
+        <args>
+            <arg expression="$ctx:subId"/>
+            <arg expression="$ctx:subState"/>
+            <arg expression="$ctx:userId"/>
+            <arg expression="$ctx:spId"/>
+            <arg expression="$ctx:productId"/>
+            <arg expression="$ctx:country"/>
+            <arg expression="$ctx:periodicity"/>
+            <arg expression="$ctx:amount"/>
+            <arg expression="$ctx:currency"/>
+            <arg expression="$ctx:subStartdate"/>
+            <arg expression="$ctx:lang"/>
+            <arg value="Orange"/>
+        </args>
+    </payloadFactory>
+
+    <respond/>
+
+</sequence>

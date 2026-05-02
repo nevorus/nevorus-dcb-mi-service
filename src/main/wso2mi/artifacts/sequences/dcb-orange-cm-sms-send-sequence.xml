@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-orange-cm-sms-send-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="INFO">
+        <message>dcb-orange-cm-sms-send-sequence - START, country: ${payload.country}</message>
+    </log>
+
+    <property name="partnerCode"   expression="json-eval($.partnerCode)" scope="default"   type="STRING"/>
+    <property name="country"       expression="json-eval($.country)" scope="default"       type="STRING"/>
+    <property name="operator"      expression="json-eval($.operator)" scope="default"      type="STRING"/>
+    <property name="senderAddress" expression="json-eval($.senderAddress)" scope="default" type="STRING"/>
+    <property name="senderName"    expression="json-eval($.senderName)" scope="default"    type="STRING"/>
+    <property name="message"       expression="json-eval($.message)"  scope="default"      type="STRING"/>
+    <property name="userAlias"     expression="json-eval($.userAlias)" scope="default"     type="STRING"/>
+    <property name="msisdn"        expression="json-eval($.msisdn)" scope="default"        type="STRING"/>
+
+    <sequence key="dcb-country-mapping-sequence"/>
+    <sequence key="dcb-mock-token-sequence"/>
+
+    <script language="js"><![CDATA[
+    var sender  = mc.getProperty("senderAddress");
+    var encoded = sender ? java.net.URLEncoder.encode(sender, "UTF-8").replace(/\+/g,"%20") : "";
+    mc.setProperty("senderAddressEncoded", encoded);
+
+    var alias  = mc.getProperty("userAlias");
+    var msisdn = mc.getProperty("msisdn");
+
+    if (alias && alias !== "" && alias !== "null") {
+        mc.setProperty("recipientAddress", "acr:X-Orange-ISE2");
+        mc.setProperty("recipientISE2", alias);
+    } else {
+        mc.setProperty("recipientAddress", msisdn);
+        mc.setProperty("recipientISE2", msisdn);
+    }
+    ]]></script>
+
+    <payloadFactory media-type="json">
+        <format>{
+                "outboundSMSMessageRequest": {
+                "address": "$1",
+                "senderAddress": "$2",
+                "senderName": "$3",
+                "outboundSMSTextMessage": {
+                "message": "$4"
+                }
+            }
+            }</format>
+        <args>
+            <arg expression="$ctx:recipientAddress"/>
+            <arg expression="$ctx:senderAddress"/>
+            <arg expression="$ctx:senderName"/>
+            <arg expression="$ctx:message"/>
+        </args>
+    </payloadFactory>
+    <property name="fullSmsRelPath"
+              expression="fn:concat($ctx:orangeSmsRelPath, '/outbound/', $ctx:senderAddressEncoded, '/requests')"
+              scope="default" type="STRING"/>
+    <log category="INFO">
+        <message>dcb-orange-cm-generate-challenge-sequence - Appel Orange challenge</message>
+        <property name="path" expression="get-property('fullSmsRelPath')"/>
+    </log>
+    <log category="INFO">
+        <property name="payloadSud" expression="json-eval($)"/>
+    </log>
+
+    <http.post configKey="OrangeConnection">
+        <relativePath>{$ctx:fullSmsRelPath}</relativePath>
+        <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"],["X-Orange-ISE2","$ctx:recipientISE2"],["X-Orange-MCO","$ctx:orangeMCO"]]</headers>
+        <requestBodyType>JSON</requestBodyType>
+        <requestBodyJson>${payload}</requestBodyJson>
+    </http.post>
+
+    <respond/>
+    <!--
+    <property name="httpStatus" expression="$axis2:HTTP_SC" scope="default"/>
+
+    <filter xpath="get-property('httpStatus') != '201'">
+        <then>
+
+            <property name="errorCode" value="SMS_SEND_FAILED" scope="default"/>
+
+            <property name="errorMessage"
+                      expression="json-eval($.requestError.serviceException.text)"
+                      scope="default"/>
+
+            <sequence key="dcb-global-error-handler-sequence"/>
+
+        </then>
+    </filter>
+
+    <log category="INFO">
+        <message>dcb-orange-cm-sms-send-sequence - SUCCES SMS envoyé</message>
+    </log>
+
+    <property name="HTTP_SC" value="200" scope="axis2"/>
+    <payloadFactory media-type="json">
+        <format>{
+            "partnerCode": "$ctx:partnerCode",
+            "country":     "$ctx:country",
+            "operator":    "$ctx:operator",
+            "status":      "sent"
+        }</format>
+    </payloadFactory>
+    -->
+
+
+</sequence>

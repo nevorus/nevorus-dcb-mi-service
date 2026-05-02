@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/messaging/v1" name="MessagingAPI_v1"
+     xmlns="http://ws.apache.org/ns/synapse">
+
+    <!-- POST /messaging/v1/sms → envoi SMS MT -->
+    <resource methods="POST" uri-template="/sms">
+        <inSequence>
+            <sequence key="dcb-orange-cm-sms-send-sequence"/>
+        </inSequence>
+        <faultSequence>
+            <sequence key="dcb-messaging-fault-sequence"/>
+        </faultSequence>
+    </resource>
+
+</api>

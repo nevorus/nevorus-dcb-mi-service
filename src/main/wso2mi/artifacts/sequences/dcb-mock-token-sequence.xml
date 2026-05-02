@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TEST UNIQUEMENT – token fictif pour gateway.sunu-it.com -->
+<sequence name="dcb-mock-token-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <property name="orangeAccessToken" value="mock-bearer-token-for-testing" type="STRING"/>
+    <log category="WARN">
+        <property name="msg" value="TOKEN FICTIF INJECTE"/>
+        <property name="accessToken" expression="$ctx:orangeAccessToken"/>
+    </log>
+
+</sequence>
+

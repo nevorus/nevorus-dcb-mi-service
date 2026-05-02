@@ -1,0 +1,34 @@
+version: "3.8"
+
+# =============================================================
+# NAKOPAY – docker-compose.yml
+# Lancer depuis la racmne du projet :
+#   docker-compose -f deployment/docker/docker-compose.yml up --build
+# OU depuis deployment/docker/ :
+#   docker-compose up --build
+# =============================================================
+
+services:
+  nakopay-mi:
+    build:
+      context: ../../          # racmne du projet (pour accéder à src/ et pom.xml)
+      dockerfile: deployment/docker/Dockerfile
+    container_name: nakopay-mi-v8
+    ports:
+      - "8290:8290"    # HTTP  – APIs nord
+      - "8253:8253"    # HTTPS
+      - "9164:9164"    # Management API
+      - "9201:9201"    # Health check
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    volumes:
+      # Hot reload deployment.toml sans rebuild
+      # Modifier deployment.toml → docker-compose restart suffit
+      - ./deployment.toml:/home/wso2carbon/wso2mi-4.4.0/conf/deployment.toml
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9201/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: on-failure

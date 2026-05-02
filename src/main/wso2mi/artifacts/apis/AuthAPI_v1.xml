@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/auth/v1" name="AuthAPI_v1"
+     xmlns="http://ws.apache.org/ns/synapse">
+
+    <!-- POST /auth/v1/challenges → génération OTP -->
+    <resource methods="POST" uri-template="/challenges">
+        <inSequence>
+            <sequence key="dcb-orange-cm-generate-challenge-sequence"/>
+        </inSequence>
+        <faultSequence>
+            <sequence key="dcb-auth-fault-sequence"/>
+        </faultSequence>
+    </resource>
+
+    <!-- POST /auth/v1/challenges/{challengeId} → validation OTP -->
+    <resource methods="POST" uri-template="/challenges/{challengeId}">
+        <inSequence>
+            <sequence key="dcb-orange-cm-validate-challenge-sequence"/>
+        </inSequence>
+        <faultSequence>
+            <sequence key="dcb-auth-fault-sequence"/>
+        </faultSequence>
+    </resource>
+
+</api>

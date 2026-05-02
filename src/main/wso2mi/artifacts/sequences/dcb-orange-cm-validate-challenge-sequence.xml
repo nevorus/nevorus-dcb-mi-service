@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-orange-cm-validate-challenge-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="INFO">
+        <property name="msg" value="dcb-orange-cm-validate-challenge-sequence - START"/>
+        <property name="challengeId" expression="get-property('uri.var.challengeId')"/>
+    </log>
+
+    <property name="country"          expression="json-eval($.challenge.country)"  scope="default"         type="STRING"/>
+    <property name="operator"         expression="json-eval($.challenge.operator)" scope="default"         type="STRING"/>
+    <property name="inputType0"       expression="json-eval($.challenge.inputs[0].type)" scope="default"   type="STRING"/>
+    <property name="inputValue0"      expression="json-eval($.challenge.inputs[0].value)" scope="default"  type="STRING"/>
+    <property name="confirmationCode" expression="json-eval($.challenge.inputs[1].value)" scope="default"  type="STRING"/>
+    <property name="challengeId"      expression="get-property('uri.var.challengeId')" scope="default" type="STRING"/>
+
+    <sequence key="dcb-country-mapping-sequence"/>
+    <sequence key="dcb-mock-token-sequence"/>
+
+    <payloadFactory media-type="json">
+        <format>{
+            "challenge": {
+            "method": "OTP-SMS-AUTH",
+            "country": "$1",
+            "service": "$2",
+            "partnerId": "$3",
+            "inputs": [
+            {"type": "$4", "value": "$5"},
+            {"type": "confirmationCode", "value": "$6"},
+            {"type": "info", "value": "ise2"}
+            ]
+            }
+            }</format>
+        <args>
+            <arg evaluator="xml" expression="$ctx:alpha3Country"/>
+            <arg evaluator="xml" expression="$ctx:orangeService"/>
+            <arg evaluator="xml" expression="$ctx:orangePartnerId"/>
+            <arg evaluator="xml" expression="$ctx:inputType0"/>
+            <arg evaluator="xml" expression="$ctx:inputValue0"/>
+            <arg evaluator="xml" expression="$ctx:confirmationCode"/>
+        </args>
+    </payloadFactory>
+    <property name="orangeFullPath"
+              expression="fn:concat($ctx:orangeChallengeRelPath, '/', $ctx:challengeId)"
+              scope="default"
+              type="STRING"/>
+    <log category="INFO">
+        <property name="msg" value="dcb-orange-cm-validate-challenge-sequence - Appel Orange validation OTP"/>
+        <property name="orangeFullPath" expression="$ctx:orangeFullPath"/>
+    </log>
+    <log category="INFO">
+        <property name="payloadSud" expression="json-eval($)"/>
+    </log>
+
+    <http.post configKey="OrangeConnection">
+        <relativePath>{$ctx:orangeFullPath}</relativePath>
+        <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"]]</headers>
+        <requestBodyType>JSON</requestBodyType>
+        <requestBodyJson>${payload}</requestBodyJson>
+    </http.post>
+
+    <respond/>
+    <!--
+    <property name="httpStatus" expression="get-property('axis2', 'HTTP_SC')" scope="default"/>
+
+    <filter xpath="$ctx:httpStatus != '201'">
+        <then>
+
+            <filter xpath="$ctx:httpStatus = 404">
+                <then>
+                    <log category="WARN">
+                        <property name="msg" value="OTP INVALIDE"/>
+                        <property name="challengeId" expression="$ctx:challengeId"/>
+                    </log>
+
+                    <variable name="errorCode"
+                              expression="'INVALID_OTP'"
+                              type="STRING"/>
+                    <variable name="errorMessage"
+                              expression="'Invalid or expired OTP'"
+                              type="STRING"/>
+                </then>
+
+                <else>
+                    <log category="ERROR">
+                        <property name="msg" value="ECHEC Orange"/>
+                        <property name="httpStatus" expression="$ctx:httpStatus"/>
+                    </log>
+
+                    <variable name="errorCode"
+                              expression="'CHALLENGE_VALIDATE_FAILED'"
+                              type="STRING"/>
+                    <variable name="errorMessage"
+                              expression="json-eval($.error.message)"
+                              type="STRING"/>
+                </else>
+            </filter>
+
+            <sequence key="dcb-global-error-handler-sequence"/>
+
+        </then>
+    </filter> -->
+
+    <!-- récupération valeur ise2 --> <!--
+    <variable name="ise2Value"
+              expression="json-eval($.challenge.result[0].value)"
+              type="STRING"/>
+
+    <log category="INFO">
+        <message>dcb-orange-cm-validate-challenge-sequence - SUCCES, ISE2 obtenu</message>
+    </log>
+
+    <property name="HTTP_SC" value="201" scope="axis2"/>
+    <payloadFactory media-type="json">
+        <format>{
+            "challenge": {
+            "result": [{"type": "ise2", "value": "$1"}],
+            "country": "$2",
+            "operator": "$3",
+            "inputs": [
+            {"type": "$4", "value": "$5"},
+            {"type": "confirmationCode", "value": "$6"},
+            {"type": "info", "value": "ise2"}
+            ]
+            }
+            }</format>
+        <args>
+            <arg evaluator="xml" expression="$ctx:ise2Value"/>
+            <arg evaluator="xml" expression="$ctx:country"/>
+            <arg evaluator="xml" expression="$ctx:operator"/>
+            <arg evaluator="xml" expression="$ctx:inputType0"/>
+            <arg evaluator="xml" expression="$ctx:inputValue0"/>
+            <arg evaluator="xml" expression="$ctx:confirmationCode"/>
+        </args>
+    </payloadFactory>
+    -->
+
+</sequence>

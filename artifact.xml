@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+
+    <artifact name="nakopay-mi-configs"
+              groupId="com.nevorus" version="1.0.0"
+              type="carbon/application"
+              serverRole="EnterpriseIntegrator">
+
+        <!-- Local Entries (connexions) -->
+        <dependency artifact="OrangeConnection" version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+
+        <!-- APIs -->
+        <dependency artifact="AuthAPI_v1"         version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="SubscriptionAPI_v1" version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="MessagingAPI_v1"    version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+
+        <!-- COMMON -->
+        <dependency artifact="dcb-country-mapping-sequence"       version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-orange-generate-token-sequence" version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-mock-token-sequence"            version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-global-error-handler-sequence"  version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+
+        <!-- CONFIG PAR PAYS -->
+        <dependency artifact="dcb-cm-config-sequence" version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-cm-config-sequence" version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-sn-config-sequence" version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+
+        <!-- AUTH -->
+        <dependency artifact="dcb-orange-cm-generate-challenge-sequence" version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-orange-cm-validate-challenge-sequence" version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-auth-fault-sequence"                   version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+
+        <!-- SUBS -->
+        <dependency artifact="dcb-orange-cm-subscription-sequence"        version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-orange-cm-unsubscription-sequence"      version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-orange-cm-subscription-status-sequence" version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-subs-fault-sequence"                    version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+
+        <!-- MESSAGING -->
+        <dependency artifact="dcb-orange-cm-sms-send-sequence" version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+        <dependency artifact="dcb-messaging-fault-sequence"    version="1.0.0" include="true" serverRole="EnterpriseIntegrator"/>
+
+    </artifact>
+
+    <!-- Local Entry -->
+    <artifact name="OrangeConnection" groupId="com.nevorus" version="1.0.0"
+              type="synapse/local-entry" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/local-entries/OrangeConnection.xml</file>
+    </artifact>
+
+    <!-- APIs -->
+    <artifact name="AuthAPI_v1"         groupId="com.nevorus" version="1.0.0" type="synapse/api" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/apis/AuthAPI_v1.xml</file>
+    </artifact>
+    <artifact name="SubscriptionAPI_v1" groupId="com.nevorus" version="1.0.0" type="synapse/api" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/apis/SubscriptionAPI_v1.xml</file>
+    </artifact>
+    <artifact name="MessagingAPI_v1"    groupId="com.nevorus" version="1.0.0" type="synapse/api" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/apis/MessagingAPI_v1.xml</file>
+    </artifact>
+
+    <!-- COMMON sequences -->
+    <artifact name="dcb-country-mapping-sequence"       groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-country-mapping-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-orange-generate-token-sequence" groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-orange-generate-token-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-mock-token-sequence"            groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-mock-token-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-global-error-handler-sequence"  groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-global-error-handler-sequence.xml</file>
+    </artifact>
+
+    <!-- CONFIG PAR PAYS -->
+    <artifact name="dcb-cm-config-sequence" groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-cm-config-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-cm-config-sequence" groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-cm-config-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-sn-config-sequence" groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-sn-config-sequence.xml</file>
+    </artifact>
+
+    <!-- AUTH -->
+    <artifact name="dcb-orange-cm-generate-challenge-sequence" groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-orange-cm-generate-challenge-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-orange-cm-validate-challenge-sequence" groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-orange-cm-validate-challenge-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-auth-fault-sequence" groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-auth-fault-sequence.xml</file>
+    </artifact>
+
+    <!-- SUBS -->
+    <artifact name="dcb-orange-cm-subscription-sequence"        groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-orange-cm-subscription-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-orange-cm-unsubscription-sequence"      groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-orange-cm-unsubscription-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-orange-cm-subscription-status-sequence" groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-orange-cm-subscription-status-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-subs-fault-sequence"                    groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-subs-fault-sequence.xml</file>
+    </artifact>
+
+    <!-- MESSAGING -->
+    <artifact name="dcb-orange-cm-sms-send-sequence" groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-orange-cm-sms-send-sequence.xml</file>
+    </artifact>
+    <artifact name="dcb-messaging-fault-sequence"    groupId="com.nevorus" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseIntegrator">
+        <file>src/main/wso2mi/artifacts/sequences/dcb-messaging-fault-sequence.xml</file>
+    </artifact>
+
+</artifacts>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-country-mapping-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="INFO">
+        <property name="country" expression="get-property('country')"/>
+        <property name="operator" expression="get-property('operator')"/>
+    </log>
+
+    <switch source="$ctx:country">
+        <case regex="ci">
+            <sequence key="dcb-ci-config-sequence"/>
+        </case>
+        <case regex="cm">
+            <sequence key="dcb-cm-config-sequence"/>
+        </case>
+
+        <default>
+            <log category="ERROR">
+                <property name="error"
+                          expression="fn:concat('PAYS NON SUPPORTE: ', get-property('country'))"/>
+            </log>
+
+            <property name="errorCode" value="UNSUPPORTED_COUNTRY"/>
+            <property name="errorMessage" expression="fn:concat('Country not supported: ', get-property('country'))"/>
+
+            <sequence key="dcb-global-error-handler-sequence"/>
+        </default>
+    </switch>
+
+</sequence>

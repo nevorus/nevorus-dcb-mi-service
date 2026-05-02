@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-orange-cm-unsubscription-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="INFO">
+        <property name="dcb-orange-cm-unsubscription-sequence - START, subscriptionId: " expression="get-property('uri.var.subscriptionId')"/>
+    </log>
+
+    <property name="subscriptionId" expression="get-property('uri.var.subscriptionId')" scope="default" type="STRING"/>
+    <property name="country"    value="cm" scope="default"    type="STRING"/>
+
+    <sequence key="dcb-country-mapping-sequence"/>
+    <sequence key="dcb-mock-token-sequence"/>
+
+    <payloadFactory media-type="json">
+        <format>{}</format>
+    </payloadFactory>
+    <property name="orangeFullSubPath"
+              expression="fn:concat($ctx:orangeSubRelPath, '/', $ctx:subscriptionId)"
+              scope="default"
+              type="STRING"/>
+    <http.delete configKey="OrangeConnection">
+        <relativePath>{$ctx:orangeFullSubPath}</relativePath>
+        <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"]]</headers>
+    </http.delete>
+
+    <property name="httpStatus" expression="$axis2:HTTP_SC" scope="default"/>
+
+    <filter xpath="$ctx:httpStatus != '204'">
+        <then>
+            <respond/>
+        </then>
+    </filter>
+
+    <log category="INFO">
+        <property name="dcb-orange-cm-unsubscription-sequence - SUCCES 204, subscriptionId: " expression="$ctx:subscriptionId"/>
+    </log>
+
+    <property name="HTTP_SC" value="204" scope="axis2"/>
+    <respond/>
+
+</sequence>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-orange-cm-subscription-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="INFO">
+        <message>dcb-orange-cm-subscription-sequence - START, country: ${payload.country}, userAlias: ${payload.user_alias}</message>
+    </log>
+
+    <property name="country"       expression="json-eval($.country)" scope="default"           type="STRING"/>
+    <property name="client"       expression="json-eval($.client)" scope="default"           type="STRING"/>
+    <property name="partner"       expression="json-eval($.partner_id)" scope="default"           type="STRING"/>
+    <property name="operator"      expression="json-eval($.operator)"  scope="default"         type="STRING"/>
+    <property name="userAlias"     expression="json-eval($.user_alias)"  scope="default"       type="STRING"/>
+    <property name="retailerName"  expression="json-eval($.retailer_name)" scope="default"     type="STRING"/>
+    <property name="productId"     expression="json-eval($.product.id)" scope="default"        type="STRING"/>
+    <property name="amount"        expression="json-eval($.product.amount)" scope="default"    type="STRING"/>
+    <property name="currency"      expression="json-eval($.product.currency)" scope="default"  type="STRING"/>
+    <property name="periodicity"   expression="json-eval($.product.periodicity)" scope="default" type="STRING"/>
+    <property name="mode"          expression="json-eval($.product.mode)" scope="default"      type="STRING"/>
+    <property name="language"      expression="json-eval($.product.language)" scope="default"  type="STRING"/>
+    <property name="evinaId"       expression="json-eval($.evina_id)" scope="default"          type="STRING"/>
+    <property name="spCallbackUrl" expression="json-eval($.sp_callback_url)" scope="default"   type="STRING"/>
+
+    <sequence key="dcb-country-mapping-sequence"/>
+    <sequence key="dcb-mock-token-sequence"/>
+
+    <script language="js"><![CDATA[
+    var sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+    mc.setProperty("startDate", sdf.format(new java.util.Date()));
+
+    var cb    = mc.getProperty("spCallbackUrl") || "";
+    var alpha = mc.getProperty("alpha3Country") || "";
+
+    mc.setProperty("noteText", cb + "?country=" + alpha);
+    ]]></script>
+
+    <payloadFactory media-type="json">
+        <format>{
+            "note": {"text": "$1"},
+            "relatedPublicKey": {"id": "$2", "name": "ISE2"},
+            "relatedParty": [
+            {"id": "$3", "name": "$3", "role": "partner"},
+            {"id": "$4", "name": "$4", "role": "retailer"}
+            ],
+            "orderItem": {
+            "action": "add",
+            "state": "Completed",
+            "product": {
+            "id": "$5",
+            "href": "$6",
+            "productCharacteristic": [
+            {"name": "taxAmount",   "value": "0"},
+            {"name": "amount",      "value": "$7"},
+            {"name": "currency",    "value": "$8"},
+            {"name": "periodicity", "value": "$9"},
+            {"name": "startDate",   "value": "$10"},
+            {"name": "country",     "value": "$11"},
+            {"name": "language",    "value": "$12"},
+            {"name": "mode",        "value": "$13"}
+            ]
+            }
+            }
+            }</format>
+
+        <args>
+            <arg expression="$ctx:noteText"/>
+            <arg expression="$ctx:userAlias"/>
+            <arg expression="$ctx:orangeService"/>
+            <arg expression="$ctx:retailerName"/>
+            <arg expression="$ctx:productId"/>
+            <arg expression="$ctx:evinaId"/>
+            <arg expression="$ctx:amount"/>
+            <arg expression="$ctx:currency"/>
+            <arg expression="$ctx:periodicity"/>
+            <arg expression="$ctx:startDate"/>
+            <arg expression="$ctx:alpha3Country"/>
+            <arg expression="$ctx:language"/>
+            <arg expression="$ctx:mode"/>
+        </args>
+    </payloadFactory>
+
+    <log category="INFO">
+        <message>dcb-orange-cm-subscription-sequence - Appel Orange productOrder, userAlias: ${vars.userAlias}</message>
+        <property name="path" expression="get-property('orangeSubRelPath')"/>
+    </log>
+
+    <log category="INFO">
+        <property name="payloadSud" expression="json-eval($)"/>
+    </log>
+
+    <http.post configKey="OrangeConnection">
+        <relativePath>{$ctx:orangeSubRelPath}</relativePath>
+        <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"]]</headers>
+        <requestBodyType>JSON</requestBodyType>
+        <requestBodyJson>${payload}</requestBodyJson>
+    </http.post>
+
+
+    <property name="httpStatus" expression="$axis2:HTTP_SC" scope="default"/>
+
+    <filter xpath="$ctx:httpStatus != '201'">
+        <then>
+            <respond/>
+            <!--<filter xpath="$ctx:httpStatus = '409'">
+                <then>
+                    <property name="errorCode"    value="SUBSCRIPTION_ALREADY_EXISTS" scope="default" type="STRING"/>
+                    <property name="errorMessage" value="Subscription already exists" scope="default" type="STRING"/>
+                </then>
+                <else>
+                    <property name="errorCode"    expression="SUBSCRIPTION_FAILED"   scope="default"                      type="STRING"/>
+                    <property name="errorMessage" expression="json-eval($.requestError.serviceException.text)"  scope="default"  type="STRING"/>
+                </else>
+            </filter>
+            <sequence key="dcb-global-error-handler-sequence"/>-->
+        </then>
+    </filter>
+
+    <property name="orderId"    expression="json-eval($.id)"   scope="default"      type="STRING"/>
+    <property name="orderState" expression="json-eval($.state)"  scope="default"    type="STRING"/>
+    <property name="orderDate"  expression="json-eval($.orderDate)"  scope="default" type="STRING"/>
+
+    <log category="INFO">
+        <message>dcb-orange-cm-subscription-sequence - SUCCES, orderId: ${vars.orderId}, state: $ctx:orderState</message>
+    </log>
+
+    <property name="HTTP_SC" value="201" scope="axis2"/>
+    <payloadFactory media-type="json">
+        <format>{
+            "id": "$1",
+            "state": "$2",
+            "order_date": "$3",
+            "country": "$4",
+            "operator": "$5",
+            "user_alias": "$6",
+            "retailer_name": "$7",
+            "product": {
+            "id": "$8",
+            "amount": "$9",
+            "currency": "$10",
+            "periodicity": "$11",
+            "mode": "$12",
+            "language": "$13"
+            },
+            "client": "$14",
+            "partner_id": "$15",
+            "evina_id": "$16"
+            }</format>
+
+        <args>
+            <arg expression="$ctx:orderId"/>
+            <arg expression="$ctx:orderState"/>
+            <arg expression="$ctx:orderDate"/>
+            <arg expression="$ctx:country"/>
+            <arg expression="$ctx:operator"/>
+            <arg expression="$ctx:userAlias"/>
+            <arg expression="$ctx:retailerName"/>
+            <arg expression="$ctx:productId"/>
+            <arg expression="$ctx:amount"/>
+            <arg expression="$ctx:currency"/>
+            <arg expression="$ctx:periodicity"/>
+            <arg expression="$ctx:mode"/>
+            <arg expression="$ctx:language"/>
+            <arg expression="$ctx:client"/>
+            <arg expression="$ctx:partner"/>
+            <arg expression="$ctx:evinaId"/>
+        </args>
+    </payloadFactory>
+
+    <respond/>
+
+</sequence>

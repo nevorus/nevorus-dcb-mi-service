@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-orange-generate-token-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="INFO">
+        <message>dcb-orange-generate-token-sequence - Demande token Orange</message>
+    </log>
+
+    <payloadFactory media-type="json">
+        <format>{"grant_type":"client_credentials"}</format>
+    </payloadFactory>
+
+    <http.post configKey="OrangeConnection">
+        <relativePath>$ctx:orangeTokenRelPath</relativePath>
+        <headers>[["Content-Type","application/x-www-form-urlencoded"],["Authorization","Basic $ctx:orangeBasicAuth"]]</headers>
+        <requestBodyType>JSON</requestBodyType>
+        <requestBodyJson>${payload}</requestBodyJson>
+    </http.post>
+
+    <property name="tokenHttpStatus" expression="$axis2:HTTP_SC" scope="default"/>
+
+    <filter xpath="$ctx:tokenHttpStatus != '200'">
+        <then>
+            <variable name="errorCode"    expression="${'TOKEN_GENERATION_FAILED'}"                                               type="STRING"/>
+            <variable name="errorMessage" expression="${'Orange token generation failed. HTTP: ' + vars.tokenHttpStatus}"        type="STRING"/>
+            <sequence key="dcb-global-error-handler-sequence"/>
+        </then>
+    </filter>
+
+    <property name="orangeAccessToken"
+              expression="json-eval($.access_token)"
+              scope="default"
+              type="STRING"/>
+
+    <log category="INFO">
+        <message>dcb-orange-generate-token-sequence - Token obtenu</message>
+    </log>
+
+</sequence>
