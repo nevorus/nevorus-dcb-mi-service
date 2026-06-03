@@ -22,7 +22,7 @@ RUN mvn clean install -DskipTests
 
 # Afficher le contenu du .car pour vérification au build
 RUN echo "=== CONTENU .CAR ===" && \
-    jar tf target/nakopay-mi-v8_1.0.0.car && \
+    jar tf target/nakopay-mi_1.0.0.car && \
     echo "=== FIN .CAR ==="
 
 # ── Stage 2 : Runtime WSO2 MI 4.4.0 ──────────────────────────
@@ -30,7 +30,7 @@ FROM wso2/wso2mi:4.4.0
 
 # Déployer le .car
 COPY --from=builder \
-     /build/target/nakopay-mi-v8_1.0.0.car \
+     /build/target/nakopay-mi_1.0.0.car \
      ${WSO2_SERVER_HOME}/repository/deployment/server/carbonapps/
 
 # deployment.toml – configuration princmpale (system.parameter inclus)

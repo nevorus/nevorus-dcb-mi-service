@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nevorus</groupId>
-    <artifactId>nakopay-mi-v8</artifactId>
+    <artifactId>nakopay-mi</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
     <name>nakopay-mi-v8</name>
@@ -14,20 +12,33 @@
             <id>wso2-nexus</id>
             <name>WSO2 internal Repository</name>
             <url>https://maven.wso2.org/nexus/content/groups/wso2-public/</url>
-            <releases><enabled>true</enabled><updatePolicy>daily</updatePolicy><checksumPolicy>ignore</checksumPolicy></releases>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
         </repository>
         <repository>
             <id>wso2.releases</id>
             <name>WSO2 internal Repository</name>
             <url>https://maven.wso2.org/nexus/content/repositories/releases/</url>
-            <releases><enabled>true</enabled><updatePolicy>daily</updatePolicy><checksumPolicy>ignore</checksumPolicy></releases>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
         </repository>
         <repository>
             <id>wso2.snapshots</id>
             <name>Apache Snapshot Repository</name>
             <url>https://maven.wso2.org/nexus/content/repositories/snapshots/</url>
-            <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
-            <releases><enabled>false</enabled></releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
         </repository>
     </repositories>
     <pluginRepositories>
@@ -35,19 +46,30 @@
             <id>wso2.snapshots</id>
             <name>Apache Snapshot Repository</name>
             <url>https://maven.wso2.org/nexus/content/repositories/snapshots/</url>
-            <snapshots><enabled>true</enabled><updatePolicy>daily</updatePolicy></snapshots>
-            <releases><enabled>false</enabled></releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
         </pluginRepository>
         <pluginRepository>
             <id>wso2-nexus</id>
             <url>https://maven.wso2.org/nexus/content/groups/wso2-public/</url>
-            <releases><enabled>true</enabled><updatePolicy>daily</updatePolicy><checksumPolicy>ignore</checksumPolicy></releases>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
         </pluginRepository>
     </pluginRepositories>
     <profiles>
         <profile>
             <id>default</id>
-            <activation><activeByDefault>true</activeByDefault></activation>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <build>
                 <plugins>
                     <plugin>
@@ -57,7 +79,9 @@
                         <executions>
                             <execution>
                                 <phase>process-resources</phase>
-                                <goals><goal>copy-dependencies</goal></goals>
+                                <goals>
+                                    <goal>copy-dependencies</goal>
+                                </goals>
                                 <configuration>
                                     <outputDirectory>${basedir}/deployment/libs</outputDirectory>
                                     <excludeTransitive>true</excludeTransitive>
@@ -70,16 +94,24 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration><source>1.8</source><target>1.8</target></configuration>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
-                        <configuration><skipIfEmpty>true</skipIfEmpty></configuration>
+                        <configuration>
+                            <skipIfEmpty>true</skipIfEmpty>
+                        </configuration>
                         <executions>
                             <execution>
-                                <phase>compile</phase><id>default-jar</id>
-                                <goals><goal>jar</goal></goals>
+                                <phase>compile</phase>
+                                <id>default-jar</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -89,7 +121,12 @@
                         <version>${car.plugin.version}</version>
                         <extensions>true</extensions>
                         <executions>
-                            <execution><phase>compile</phase><goals><goal>car</goal></goals></execution>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>car</goal>
+                                </goals>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -98,8 +135,11 @@
                         <version>2.5.2</version>
                         <executions>
                             <execution>
-                                <id>install-car</id><phase>compile</phase>
-                                <goals><goal>install-file</goal></goals>
+                                <id>install-car</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>install-file</goal>
+                                </goals>
                                 <configuration>
                                     <packaging>car</packaging>
                                     <artifactId>${project.artifactId}</artifactId>
@@ -122,11 +162,17 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>default-compile</id><phase>generate-sources</phase>
-                                <goals><goal>compile</goal></goals>
+                                <id>default-compile</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
                             </execution>
                         </executions>
-                        <configuration><source>1.8</source><target>1.8</target></configuration>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.wso2.maven</groupId>
@@ -134,7 +180,12 @@
                         <version>${car.plugin.version}</version>
                         <extensions>true</extensions>
                         <executions>
-                            <execution><phase>generate-sources</phase><goals><goal>car</goal></goals></execution>
+                            <execution>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>car</goal>
+                                </goals>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -143,7 +194,10 @@
                         <version>3.5.0</version>
                         <executions>
                             <execution>
-                                <phase>process-resources</phase><goals><goal>copy-dependencies</goal></goals>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-dependencies</goal>
+                                </goals>
                                 <configuration>
                                     <outputDirectory>${basedir}/deployment/libs</outputDirectory>
                                     <excludeTransitive>true</excludeTransitive>
@@ -160,8 +214,11 @@
                         <extensions>true</extensions>
                         <executions>
                             <execution>
-                                <id>config-mapper-parser</id><phase>generate-resources</phase>
-                                <goals><goal>config-mapper-parser</goal></goals>
+                                <id>config-mapper-parser</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>config-mapper-parser</goal>
+                                </goals>
                                 <configuration>
                                     <miVersion>${project.runtime.version}</miVersion>
                                     <executeCipherTool>${ciphertool.enable}</executeCipherTool>
@@ -180,12 +237,17 @@
                         <extensions>true</extensions>
                         <executions>
                             <execution>
-                                <id>antrun-edit</id><phase>process-resources</phase>
-                                <goals><goal>run</goal></goals>
+                                <id>antrun-edit</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
                                 <configuration>
                                     <target>
                                         <copy todir="${basedir}/target/tmp_docker/CompositeApps">
-                                            <fileset dir="${basedir}/target"><include name="*.car"/></fileset>
+                                            <fileset dir="${basedir}/target">
+                                                <include name="*.car"></include>
+                                            </fileset>
                                         </copy>
                                     </target>
                                 </configuration>
@@ -199,8 +261,11 @@
                         <extensions>true</extensions>
                         <executions>
                             <execution>
-                                <id>docker-build</id><phase>package</phase>
-                                <goals><goal>build</goal></goals>
+                                <id>docker-build</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
                                 <configuration>
                                     <images>
                                         <image>
@@ -208,7 +273,9 @@
                                             <build>
                                                 <from>${dockerfile.base.image}</from>
                                                 <dockerFile>${basedir}/target/tmp_docker/Dockerfile</dockerFile>
-                                                <args><BASE_IMAGE>${dockerfile.base.image}</BASE_IMAGE></args>
+                                                <args>
+                                                    <BASE_IMAGE>${dockerfile.base.image}</BASE_IMAGE>
+                                                </args>
                                                 <useDefaultExcludes>false</useDefaultExcludes>
                                             </build>
                                         </image>
@@ -234,8 +301,11 @@
                 <version>5.2.109</version>
                 <executions>
                     <execution>
-                        <id>synapse-unit-test</id><phase>test</phase>
-                        <goals><goal>synapse-unit-test</goal></goals>
+                        <id>synapse-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>synapse-unit-test</goal>
+                        </goals>
                     </execution>
                 </executions>
                 <configuration>
@@ -265,7 +335,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.runtime.version>4.4.0</project.runtime.version>
         <dockerfile.base.image>wso2/wso2mi:${project.runtime.version}</dockerfile.base.image>
-        <car.plugin.version>5.4.12</car.plugin.version>
+        <car.plugin.version>5.4.16</car.plugin.version>
         <test.server.type>local</test.server.type>
         <test.server.host>localhost</test.server.host>
         <test.server.port>9008</test.server.port>
@@ -279,7 +349,12 @@
             <artifactId>mi-connector-http</artifactId>
             <version>0.1.12</version>
             <type>zip</type>
-            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.bettercloud</groupId>

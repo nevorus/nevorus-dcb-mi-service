@@ -13,33 +13,6 @@ password  = "wso2carbon"
 alias     = "symmetric.key.value"
 algorithm = "AES"
 
-# =============================================================
-# SYSTEM PARAMETERS
-# Accessibles via get-property('key') dans les séquences.
-# OrangeConnection.xml définit la baseUrl (mock ou prod).
-# Icm on stocke les credentials et les paths relatifs.
-# Pour passer en PROD : changer basic.auth + paths si différents
-# =============================================================
-
 [system.parameter]
 
-# ── Côte d'Ivoire / Orange ────────────────────────────────────
-'orange.ci.mco'            = "Ocm"
-'orange.ci.service'        = "BRASTORNE"
-'orange.ci.partner.id'     = "PDKSUB"
-'orange.ci.basic.auth'     = "dGVzdDp0ZXN0"
-'orange.ci.token.path'     = "/oauth/v3/token"
-'orange.ci.challenge.path' = "/challenge/v1/challenges"
-'orange.ci.sub.path'       = "/payment/v1/digipay_sub/productOrder"
-'orange.ci.sms.path'       = "/smsmessaging/service/mea/v1"
-
-# ── Cameroun / Orange ─────────────────────────────────────────
-'orange.cm.mco'            = "OCM"
-'orange.cm.service'        = "BRASTORNE"
-'orange.cm.partner.id'     = "PDKSUB"
-'orange.cm.basic.auth'     = "dGVzdDp0ZXN0"
-'orange.cm.token.path'     = "/oauth/v3/token"
-'orange.cm.challenge.path' = "/challenge/v1/challenges"
-'orange.cm.sub.path'       = "/payment/v1/digipay_sub/productOrder"
-'orange.cm.sms.path'       = "/smsmessaging/service/mea/v1"
 

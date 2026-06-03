@@ -13,7 +13,7 @@ services:
     build:
       context: ../../          # racmne du projet (pour accéder à src/ et pom.xml)
       dockerfile: deployment/docker/Dockerfile
-    container_name: nakopay-mi-v8
+    container_name: nakopay-mi-v1
     ports:
       - "8290:8290"    # HTTP  – APIs nord
       - "8253:8253"    # HTTPS

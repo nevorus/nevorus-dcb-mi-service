@@ -7,9 +7,6 @@
     </log>
 
     <switch source="$ctx:country">
-        <case regex="ci">
-            <sequence key="dcb-ci-config-sequence"/>
-        </case>
         <case regex="cm">
             <sequence key="dcb-cm-config-sequence"/>
         </case>
