@@ -1,0 +1,75 @@
+name: Build & Push to Harbor
+
+on:
+  push:
+    branches: [ "main", "feature/*", "hotfix/*", "release/*" ]
+
+env:
+  DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY_URL }}
+  DOCKER_USER: ${{ secrets.DOCKER_REGISTRY_USER }}
+  DOCKER_PASS: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get project info from pom.xml
+        id: project-info
+        run: |
+          ARTIFACT_ID=$(grep -m1 '<artifactId>' pom.xml | sed 's/.*<artifactId>\(.*\)<\/artifactId>.*/\1/')
+          VERSION=$(grep -m1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
+          echo "ARTIFACT_ID=$ARTIFACT_ID" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_PASS }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deployment/docker/Dockerfile
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ steps.project-info.outputs.ARTIFACT_ID }}:${{ steps.project-info.outputs.VERSION }}
+            ${{ env.DOCKER_REGISTRY }}/${{ steps.project-info.outputs.ARTIFACT_ID }}:latest
+
+      - name: Update Helm values and chart version
+        run: |
+          sed -i "s|^\( *repository:\).*|\1 $DOCKER_REGISTRY/${{ steps.project-info.outputs.ARTIFACT_ID }}|" ./k8s/values.yaml
+          sed -i "s|^\( *tag:\).*|\1 \"${{ steps.project-info.outputs.VERSION }}\"|" ./k8s/values.yaml
+          sed -i "s|^\(appVersion:\).*|\1 \"${{ steps.project-info.outputs.VERSION }}\"|" ./k8s/Chart.yaml
+
+      - name: Commit and push updated Helm files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.email "elhadjiserigne.toure@nevorus.com"
+          git config user.name "hadj92"
+
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+
+          if git diff --quiet ./k8s/values.yaml ./k8s/Chart.yaml; then
+            echo "Aucun changement Helm a committer."
+            exit 0
+          fi
+
+          git add ./k8s/values.yaml ./k8s/Chart.yaml
+          git commit -m "CI: Update Helm chart for ${{ steps.project-info.outputs.ARTIFACT_ID }}:${{ steps.project-info.outputs.VERSION }}"
+          git push "https://x-access-token:$GITHUB_TOKEN@github.com/${{ github.repository }}.git" "HEAD:$BRANCH_NAME"
