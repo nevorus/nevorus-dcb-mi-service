@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-payment-fault-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="ERROR">
+        <property name="msg"             value="━━━ dcb-payment-fault-sequence – EXCEPTION NON GEREE ━━━"/>
+        <property name="ERROR_CODE"      expression="$ctx:ERROR_CODE"/>
+        <property name="ERROR_MESSAGE"   expression="$ctx:ERROR_MESSAGE"/>
+        <property name="ERROR_DETAIL"    expression="$ctx:ERROR_DETAIL"/>
+        <property name="ERROR_EXCEPTION" expression="$ctx:ERROR_EXCEPTION"/>
+        <property name="httpStatus"      expression="$axis2:HTTP_SC"/>
+        <property name="http_method"     expression="$axis2:HTTP_METHOD"/>
+        <property name="request_uri"     expression="$ctx:REST_SUB_REQUEST_PATH"/>
+    </log>
+
+    <property name="HTTP_SC" value="500" scope="axis2"/>
+    <payloadFactory media-type="json">
+        <format>{"error": {"service": "PAYMENT", "code": "PAYMENT_INTERNAL_ERROR", "message": "An unexpected error occurred in Payment service"}}</format>
+    </payloadFactory>
+    <respond/>
+
+</sequence>

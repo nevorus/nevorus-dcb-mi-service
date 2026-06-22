@@ -10,6 +10,8 @@ version: "3.8"
 
 services:
   nakopay-mi:
+    env_file:
+      - .env
     build:
       context: ../../          # racmne du projet (pour accéder à src/ et pom.xml)
       dockerfile: deployment/docker/Dockerfile

@@ -12,6 +12,7 @@
     <property name="country"    value="cm" scope="default"    type="STRING"/>
     <sequence key="dcb-country-mapping-sequence"/>
     <sequence key="dcb-mock-token-sequence"/>
+    <property name="orangeSubRelPath" expression="${configs.orange_sub_rel_path}" scope="default" type="STRING" />
     <property name="orangeFullSubPath"
               expression="fn:concat($ctx:orangeSubRelPath, '/', $ctx:subscriptionId)"
               scope="default"

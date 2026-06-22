@@ -10,8 +10,8 @@
     </payloadFactory>
 
     <http.post configKey="OrangeConnection">
-        <relativePath>$ctx:orangeTokenRelPath</relativePath>
-        <headers>[["Content-Type","application/x-www-form-urlencoded"],["Authorization","Basic $ctx:orangeBasicAuth"]]</headers>
+        <relativePath>{${configs.orange_token_rel_path}}</relativePath>
+        <headers>[["Content-Type","application/x-www-form-urlencoded"],["Authorization","Basic ${configs.orange_basic_auth}"]]</headers>
         <requestBodyType>JSON</requestBodyType>
         <requestBodyJson>${payload}</requestBodyJson>
     </http.post>

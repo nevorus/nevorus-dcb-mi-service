@@ -1,0 +1,89 @@
+openapi: 3.0.1
+info:
+  title: DCB-MESSAGING-API
+  description: API Definition of MessagingAPI_v1
+  version: v1
+servers:
+  - url: 'http://localhost:8290/messaging/v1'
+  - url: 'https://localhost:8253/messaging/v1'
+security:
+  - default: []
+paths:
+  /sms:
+    post:
+      requestBody:
+        description: Sample Payload
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payload:
+                  type: object
+          application/xml:
+            schema:
+              type: object
+              xml:
+                name: payload
+        required: false
+      responses:
+        default:
+          description: Default response
+      security:
+        - default: []
+      x-auth-type: Application & Application User
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: false
+components:
+  securitySchemes:
+    default:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'https://test.com'
+          scopes: {}
+x-wso2-api-key-header: ApiKey
+x-wso2-auth-header: Authorization
+x-wso2-cors:
+  corsConfigurationEnabled: false
+  accessControlAllowOrigins:
+    - '*'
+  accessControlAllowCredentials: false
+  accessControlAllowHeaders:
+    - authorization
+    - Access-Control-Allow-Origin
+    - Content-Type
+    - SOAPAction
+    - apikey
+    - Internal-Key
+  accessControlAllowMethods:
+    - GET
+    - PUT
+    - POST
+    - DELETE
+    - PATCH
+    - OPTIONS
+x-wso2-production-endpoints:
+  urls:
+    - >-
+      http://nevorus-dcb-mi-service-k8s.cash-management-apps.svc.cluster.local:8290/messaging/v1
+  type: http
+x-wso2-sandbox-endpoints:
+  urls:
+    - >-
+      http://nevorus-dcb-mi-service-k8s.cash-management-apps.svc.cluster.local:8290/messaging/v1
+  type: http
+x-wso2-basePath: /messaging/v1
+x-wso2-transports:
+  - http
+  - https
+x-wso2-application-security:
+  security-types:
+    - oauth2
+  optional: false
+x-wso2-response-cache:
+  enabled: false
+  cacheTimeoutInSeconds: 300

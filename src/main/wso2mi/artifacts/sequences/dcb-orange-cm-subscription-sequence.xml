@@ -88,7 +88,7 @@
     </log>
 
     <http.post configKey="OrangeConnection">
-        <relativePath>{$ctx:orangeSubRelPath}</relativePath>
+        <relativePath>{${configs.orange_sub_rel_path}}</relativePath>
         <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"]]</headers>
         <requestBodyType>JSON</requestBodyType>
         <requestBodyJson>${payload}</requestBodyJson>

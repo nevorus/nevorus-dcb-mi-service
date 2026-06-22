@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dcb-orange-cm-payment-sequence" xmlns="http://ws.apache.org/ns/synapse">
+
+    <log category="INFO">
+        <property name="msg"     value="dcb-orange-cm-payment-sequence - START"/>
+        <property name="country" expression="json-eval($.country)"/>
+    </log>
+
+    <!-- Extraction des champs de la requête nord -->
+    <property name="accountNumber" expression="json-eval($.accountNumber)" scope="default" type="STRING"/>
+    <property name="partnerCode"   expression="json-eval($.partnerCode)"   scope="default" type="STRING"/>
+    <property name="msisdn"        expression="json-eval($.msisdn)"        scope="default" type="STRING"/>
+    <property name="currency"      expression="json-eval($.currency)"      scope="default" type="STRING"/>
+    <property name="country"       expression="json-eval($.country)"       scope="default" type="STRING"/>
+    <property name="amount"        expression="json-eval($.amount)"        scope="default" type="STRING"/>
+    <property name="channel"       expression="json-eval($.channel)"       scope="default" type="STRING"/>
+    <property name="operator"      expression="json-eval($.operator)"      scope="default" type="STRING"/>
+    <property name="service"       expression="json-eval($.service)"       scope="default" type="STRING"/>
+    <property name="operation"     expression="json-eval($.operation)"     scope="default" type="STRING"/>
+    <property name="orderId"       expression="json-eval($.orderId)"       scope="default" type="STRING"/>
+
+    <!-- Champs dcbDetails -->
+    <property name="userAlias"     expression="json-eval($.dcbDetails.userAlias)"     scope="default" type="STRING"/>
+    <property name="onBehalfOf"    expression="json-eval($.dcbDetails.onBehalfOf)"    scope="default" type="STRING"/>
+    <property name="referenceCode" expression="json-eval($.dcbDetails.referenceCode)" scope="default" type="STRING"/>
+    <property name="serviceId"     expression="json-eval($.dcbDetails.serviceId)"     scope="default" type="STRING"/>
+    <property name="description"   expression="json-eval($.dcbDetails.description)"   scope="default" type="STRING"/>
+
+    <!-- Récupération config pays (alpha3Country, orangeMCO, orangePaymentRelPath, etc.) + token -->
+    <sequence key="dcb-country-mapping-sequence"/>
+    <sequence key="dcb-mock-token-sequence"/>
+
+    <!-- Construction du payload sud Orange -->
+    <payloadFactory media-type="json">
+        <format>{
+            "amountTransaction": {
+                "endUserId": "acr:X-Orange-ISE2",
+                "paymentAmount": {
+                    "chargingInformation": {
+                        "amount": "$1",
+                        "currency": "$2",
+                        "description": "$3"
+                    },
+                    "chargingMetaData": {
+                        "onBehalfOf": "$4",
+                        "purchaseCategoryCode": "VOD",
+                        "serviceId": "$5"
+                    }
+                },
+                "transactionOperationStatus": "Charged",
+                "referenceCode": "$6",
+                "clientCorrelator": "$7"
+            }
+        }</format>
+        <args>
+            <arg evaluator="xml" expression="$ctx:amount"/>
+            <arg evaluator="xml" expression="$ctx:currency"/>
+            <arg evaluator="xml" expression="$ctx:description"/>
+            <arg evaluator="xml" expression="$ctx:onBehalfOf"/>
+            <arg evaluator="xml" expression="$ctx:serviceId"/>
+            <arg evaluator="xml" expression="$ctx:referenceCode"/>
+            <arg evaluator="xml" expression="$ctx:orderId"/>
+        </args>
+    </payloadFactory>
+
+    <log category="INFO">
+        <property name="msg"            value="dcb-orange-cm-payment-sequence - Appel Orange payment"/>
+        <property name="orangeMCO"      expression="$ctx:orangeMCO"/>
+        <property name="userAlias"      expression="$ctx:userAlias"/>
+        <property name="payloadSud"     expression="json-eval($)"/>
+        <property name="orangePaymentRelPath"     expression="$ctx:orangePaymentRelPath"/>
+    </log>
+
+    <http.post configKey="OrangeConnection">
+        <relativePath>{${configs.orange_payment_rel_path}}</relativePath>
+        <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"],["X-Orange-ISE2","$ctx:userAlias"],["X-Orange-MCO","$ctx:orangeMCO"]]</headers>
+        <requestBodyType>JSON</requestBodyType>
+        <requestBodyJson>${payload}</requestBodyJson>
+        <forceScAccepted>false</forceScAccepted>
+        <disableChunking>false</disableChunking>
+        <forceHttp10>false</forceHttp10>
+        <noKeepAlive>false</noKeepAlive>
+        <forcePostPutNobody>false</forcePostPutNobody>
+        <forceHttpContentLength>false</forceHttpContentLength>
+    </http.post>
+
+    <property name="httpStatus" expression="$axis2:HTTP_SC" scope="default"/>
+
+    <!-- DCB synchrone : on accepte 200 ET 201 comme succès Orange -->
+    <filter xpath="$ctx:httpStatus != '201' and $ctx:httpStatus != '200'">
+        <then><respond/>
+            <filter xpath="$ctx:httpStatus = '403'">
+                <then>
+                    <log category="WARN">
+                        <property name="msg" value="dcb-orange-cm-payment-sequence - CREDIT INSUFFISANT"/>
+                    </log>
+                    <variable name="errorCode"    expression="${'PAYMENT_INSUFFICIENT_FUNDS'}" type="STRING"/>
+                    <variable name="errorMessage" expression="${payload.requestError.policyException.text}" type="STRING"/>
+                </then>
+                <else>
+                    <log category="ERROR">
+                        <property name="msg"        value="dcb-orange-cm-payment-sequence - ECHEC Orange"/>
+                        <property name="httpStatus" expression="$ctx:httpStatus"/>
+                    </log>
+                    <variable name="errorCode"    expression="${'PAYMENT_FAILED'}" type="STRING"/>
+                    <variable name="errorMessage" expression="${payload.requestError.serviceException.text}" type="STRING"/>
+                </else>
+            </filter>
+            <sequence key="dcb-global-error-handler-sequence"/>
+        </then>
+    </filter>
+
+    <!-- Récupération des infos retournées par Orange -->
+    <property name="serverReferenceCode" expression="json-eval($.amountTransaction.serverReferenceCode)" scope="default" type="STRING"/>
+
+    <log category="INFO">
+        <property name="msg" value="dcb-orange-cm-payment-sequence - SUCCES paiement"/>
+    </log>
+
+    <!-- Réponse nord : DCB synchrone → status "success" (pas "initiated") -->
+    <property name="HTTP_SC" value="200" scope="axis2"/>
+    <payloadFactory media-type="json">
+        <format>{
+            "country": "$1",
+            "currency": "$2",
+            "amount": "$3",
+            "channel": "$4",
+            "accountNumber": "$5",
+            "partnerCode": "$6",
+            "operator": "$7",
+            "service": "$8",
+            "msisdn": "$9",
+            "extTransactionId": "$10",
+            "orderId": "$11",
+            "operation": "$12",
+            "status": "success",
+            "dcbDetails": {
+                "userAlias": "$13",
+                "onBehalfOf": "$14",
+                "referenceCode": "$15",
+                "serviceId": "$16",
+                "description": "$17"
+            }
+        }</format>
+        <args>
+            <arg evaluator="xml" expression="$ctx:country"/>
+            <arg evaluator="xml" expression="$ctx:currency"/>
+            <arg evaluator="xml" expression="$ctx:amount"/>
+            <arg evaluator="xml" expression="$ctx:channel"/>
+            <arg evaluator="xml" expression="$ctx:accountNumber"/>
+            <arg evaluator="xml" expression="$ctx:partnerCode"/>
+            <arg evaluator="xml" expression="$ctx:operator"/>
+            <arg evaluator="xml" expression="$ctx:service"/>
+            <arg evaluator="xml" expression="$ctx:msisdn"/>
+            <arg evaluator="xml" expression="$ctx:serverReferenceCode"/>
+            <arg evaluator="xml" expression="$ctx:orderId"/>
+            <arg evaluator="xml" expression="$ctx:operation"/>
+            <arg evaluator="xml" expression="$ctx:userAlias"/>
+            <arg evaluator="xml" expression="$ctx:onBehalfOf"/>
+            <arg evaluator="xml" expression="$ctx:referenceCode"/>
+            <arg evaluator="xml" expression="$ctx:serviceId"/>
+            <arg evaluator="xml" expression="$ctx:description"/>
+        </args>
+    </payloadFactory>
+
+<respond/>
+
+</sequence>

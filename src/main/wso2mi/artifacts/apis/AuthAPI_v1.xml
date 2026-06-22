@@ -13,7 +13,7 @@
     </resource>
 
     <!-- POST /auth/v1/challenges/{challengeId} → validation OTP -->
-    <resource methods="POST" uri-template="/challenges/{challengeId}">
+    <resource methods="POST" uri-template="/challenges/{challengeId}/validate">
         <inSequence>
             <sequence key="dcb-orange-cm-validate-challenge-sequence"/>
         </inSequence>

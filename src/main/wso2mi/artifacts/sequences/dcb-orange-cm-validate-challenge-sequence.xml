@@ -39,6 +39,7 @@
             <arg evaluator="xml" expression="$ctx:confirmationCode"/>
         </args>
     </payloadFactory>
+    <property name="orangeChallengeRelPath" expression="${configs.orange_challenge_rel_path}" scope="default" type="STRING" />
     <property name="orangeFullPath"
               expression="fn:concat($ctx:orangeChallengeRelPath, '/', $ctx:challengeId)"
               scope="default"

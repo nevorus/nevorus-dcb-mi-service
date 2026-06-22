@@ -23,6 +23,12 @@
             <property name="HTTP_SC" value="409" scope="axis2"/>
         </then>
     </filter>
+    <filter xpath="${vars.errorCode == 'PAYMENT_FAILED'}">
+        <then><property name="HTTP_SC" value="400" scope="axis2"/></then>
+    </filter>
+    <filter xpath="${vars.errorCode == 'PAYMENT_INSUFFICIENT_FUNDS'}">
+        <then><property name="HTTP_SC" value="403" scope="axis2"/></then>
+    </filter>
 
     <filter xpath="
         get-property('errorCode') = 'UNSUPPORTED_COUNTRY'
@@ -38,7 +44,18 @@
     </filter>
 
     <payloadFactory media-type="json">
-        <format>{"error":{"code":"$1","message":"$2"}}</format>
+        <format>
+            <!--{"error":{"code":"$1","message":"$2"}}-->
+            {
+            "requestError": {
+            "serviceException": {
+            "messageId": "$1",
+            "text": "$2",
+            "variables": "country – the part of the request that is invalid"
+            }
+            }
+            }
+        </format>
         <args>
             <arg evaluator="xml" expression="get-property('errorCode')"/>
             <arg evaluator="xml" expression="get-property('errorMessage')"/>

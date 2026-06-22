@@ -52,6 +52,7 @@
             <arg expression="$ctx:message"/>
         </args>
     </payloadFactory>
+    <property name="orangeSmsRelPath" expression="${configs.orange_sms_rel_path}" scope="default" type="STRING" />
     <property name="fullSmsRelPath"
               expression="fn:concat($ctx:orangeSmsRelPath, '/outbound/', $ctx:senderAddressEncoded, '/requests')"
               scope="default" type="STRING"/>

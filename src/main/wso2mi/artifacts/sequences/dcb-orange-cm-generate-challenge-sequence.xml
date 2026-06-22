@@ -48,14 +48,14 @@
 
     <log category="INFO">
         <message>dcb-orange-cm-generate-challenge-sequence - Appel Orange challenge</message>
-        <property name="path" expression="get-property('orangeChallengeRelPath')"/>
+        <property name="path" expression="${configs.orange_challenge_rel_path}"/>
     </log>
     <log category="INFO">
         <property name="payloadSud" expression="json-eval($)"/>
     </log>
 
     <http.post configKey="OrangeConnection">
-        <relativePath>{$ctx:orangeChallengeRelPath}</relativePath>
+        <relativePath>{${configs.orange_challenge_rel_path}}</relativePath>
         <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"]]</headers>
         <requestBodyType>JSON</requestBodyType>
         <requestBodyJson>${payload}</requestBodyJson>
