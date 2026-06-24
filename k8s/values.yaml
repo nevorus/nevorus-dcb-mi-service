@@ -118,3 +118,11 @@ affinity: {}
 
 active:
     profile: prod
+
+env:
+  orange_basic_auth: dGVzdDp0ZXN0
+  orange_token_rel_path: /oauth/v3/token
+  orange_challenge_rel_path: /challenge/v1/challenges
+  orange_sub_rel_path: /payment/v1/digipay_sub/productOrder
+  orange_sms_rel_path: /smsmessaging/service/mea/v1
+  orange_payment_rel_path: /payment/mea/v1/acr:X-Orange-ISE2/transactions/amount
