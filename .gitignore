@@ -1,5 +1,5 @@
 # ── Dossier deployment (Docker, configs sensibles) ───────────
-deployment/docker/
+
 
 # ── Build Maven ───────────────────────────────────────────────
 target/

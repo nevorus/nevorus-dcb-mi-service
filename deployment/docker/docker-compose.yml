@@ -1,0 +1,73 @@
+version: "3.8"
+
+# =============================================================
+# NAKOPAY – docker-compose.yml
+# Lancer depuis la racine du projet :
+#   docker-compose -f deployment/docker/docker-compose.yml up --build
+# OU depuis deployment/docker/ :
+#   docker-compose up --build
+# =============================================================
+
+services:
+  nakopay-mi:
+    env_file:
+      - .env
+    build:
+      context: ../../          # racine du projet (pour accéder à src/ et pom.xml)
+      dockerfile: deployment/docker/Dockerfile
+    container_name: nakopay-mi-v1
+    ports:
+      - "8290:8290"    # HTTP  – APIs nord
+      - "8253:8253"    # HTTPS
+      - "9164:9164"    # Management API
+      - "9201:9201"    # Health check
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+      - REDIS_HOST=nakopay-redis
+      - REDIS_PORT=6379
+    volumes:
+      # Hot reload deployment.toml sans rebuild
+      # Modifier deployment.toml → docker-compose restart suffit
+      - ./deployment.toml:/home/wso2carbon/wso2mi-4.4.0/conf/deployment.toml
+    depends_on:
+      nakopay-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9201/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: on-failure
+
+  # --- Redis ---
+  nakopay-redis:
+    image: redis:7.2-alpine
+    container_name: nakopay-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: on-failure
+
+  # --- Redis Commander (UI pour visualiser Redis en dev) ---
+  nakopay-redis-ui:
+    image: rediscommander/redis-commander:latest
+    container_name: nakopay-redis-ui
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:nakopay-redis:6379:0:passer
+    depends_on:
+      nakopay-redis:
+        condition: service_healthy
+    restart: on-failure
+
+volumes:
+  redis_data:
