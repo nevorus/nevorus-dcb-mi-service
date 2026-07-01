@@ -2,18 +2,70 @@
 <sequence name="dcb-orange-generate-token-sequence" xmlns="http://ws.apache.org/ns/synapse">
 
     <log category="INFO">
-        <message>dcb-orange-generate-token-sequence - Demande token Orange</message>
+        <message>dcb-orange-generate-token-sequence - Vérification token en cache Redis</message>
+    </log>
+
+    <!-- Initialisation de la connexion Redis -->
+    <redis.init>
+        <redisHost>{${configs.redis_host}}</redisHost>
+        <redisPort>{${configs.redis_port}}</redisPort>
+        <redispassword>{${configs.redis_password}}</redispassword>
+        <redisTimeout>5000</redisTimeout>
+        <usePool>true</usePool>
+    </redis.init>
+
+    <!-- Clé Redis unique par client/pays/opérateur -->
+    <property name="redisTokenKey"
+              expression="fn:concat('orange_token_', $ctx:orangeService, '_', $ctx:country, '_', $ctx:operator)"
+              scope="default"
+              type="STRING"/>
+
+    <!-- Vérification du token dans Redis -->
+    <redis.get>
+        <redisKey>{$ctx:redisTokenKey}</redisKey>
+    </redis.get>
+
+    <log category="INFO">
+        <message>dcb-orange-generate-token-sequence - Résultat brut Redis : </message>
+    </log>
+
+    <property name="cachedToken"
+              expression="json-eval($.output)"
+              scope="default"
+              type="STRING"/>
+
+    <filter xpath="$ctx:cachedToken != '' and $ctx:cachedToken != 'null'">
+    <then>
+        <!-- Token trouvé dans Redis -->
+        <log category="INFO">
+            <message>dcb-orange-generate-token-sequence - Token récupéré depuis Redis</message>
+        </log>
+        <property name="orangeAccessToken"
+                  expression="$ctx:cachedToken"
+                  scope="default"
+                  type="STRING"/>
+    </then>
+    <else>
+    <!-- Token absent ou expiré : génération d'un nouveau -->
+    <log category="INFO">
+        <message>dcb-orange-generate-token-sequence - Aucun token en cache, génération en cours</message>
     </log>
 
     <payloadFactory media-type="json">
         <format>{"grant_type":"client_credentials"}</format>
     </payloadFactory>
 
-    <http.post configKey="OrangeConnection">
+    <http.post configKey="DcbOrangeCmGenerateTokenConnection">
         <relativePath>{${configs.orange_token_rel_path}}</relativePath>
-        <headers>[["Content-Type","application/x-www-form-urlencoded"],["Authorization","Basic ${configs.orange_basic_auth}"]]</headers>
+        <headers>["Content-Type","application/x-www-form-urlencoded"]</headers>
         <requestBodyType>JSON</requestBodyType>
         <requestBodyJson>${payload}</requestBodyJson>
+        <forceScAccepted>false</forceScAccepted>
+        <disableChunking>false</disableChunking>
+        <forceHttp10>false</forceHttp10>
+        <noKeepAlive>false</noKeepAlive>
+        <forcePostPutNobody>false</forcePostPutNobody>
+        <forceHttpContentLength>false</forceHttpContentLength>
     </http.post>
 
     <property name="tokenHttpStatus" expression="$axis2:HTTP_SC" scope="default"/>
@@ -31,8 +83,27 @@
               scope="default"
               type="STRING"/>
 
-    <log category="INFO">
-        <message>dcb-orange-generate-token-sequence - Token obtenu</message>
-    </log>
+        <!-- Stockage du token -->
+        <redis.set>
+            <redisKey>{$ctx:redisTokenKey}</redisKey>
+            <redisValue>{$ctx:orangeAccessToken}</redisValue>
+        </redis.set>
 
+        <!-- TTL de 3500s -->
+        <redis.expire>
+            <redisKey>{$ctx:redisTokenKey}</redisKey>
+            <redisSeconds>3500</redisSeconds>
+        </redis.expire>
+
+        <log level="custom">
+            <property name="redisTokenKey" expression="$ctx:redisTokenKey"/>
+        </log>
+
+
+    <log category="INFO">
+        <message>dcb-orange-generate-token-sequence - Token obtenu : </message>
+        <property name="TOKEN" expression="$ctx:orangeAccessToken"/>
+    </log>
+    </else>
+</filter>
 </sequence>

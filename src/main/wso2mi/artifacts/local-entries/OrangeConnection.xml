@@ -9,7 +9,7 @@
     <http.init>
         <name>OrangeConnection</name>
         <connectionType>HTTPS</connectionType>
-        <baseUrl>https://gateway.sunu-it.com</baseUrl>
+        <baseUrl>{${configs.orange_dcb_base_url}}</baseUrl>
         <authType>None</authType>
     </http.init>
 </localEntry>

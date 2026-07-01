@@ -26,6 +26,14 @@ FROM wso2/wso2mi:4.4.0
 COPY --from=builder /build/target/*.car \
      ${WSO2_SERVER_HOME}/repository/deployment/server/carbonapps/
 
+# Connecteur Redis
+COPY deployment/libs/redis-connector-3.1.8.zip \
+     ${WSO2_SERVER_HOME}/repository/deployment/server/synapse-libs/
+
+# Jedis (dépendance du connecteur Redis)
+COPY deployment/libs/jedis-3.10.0.jar \
+     ${WSO2_SERVER_HOME}/lib/
+
 # deployment.toml
 COPY deployment/docker/deployment.toml \
      ${WSO2_SERVER_HOME}/conf/deployment.toml

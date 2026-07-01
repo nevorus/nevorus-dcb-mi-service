@@ -15,7 +15,7 @@
     <property name="msisdn"        expression="json-eval($.msisdn)" scope="default"        type="STRING"/>
 
     <sequence key="dcb-country-mapping-sequence"/>
-    <sequence key="dcb-mock-token-sequence"/>
+    <sequence key="dcb-orange-generate-token-sequence"/>
 
     <script language="js"><![CDATA[
     var sender  = mc.getProperty("senderAddress");

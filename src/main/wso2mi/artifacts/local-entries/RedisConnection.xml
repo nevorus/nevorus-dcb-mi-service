@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localEntry key="RedisConnection" xmlns="http://ws.apache.org/ns/synapse">
+    <redis.init>
+        <connectionType>SINGLE_NODE</connectionType>
+        <host>{${configs.redis_host}}</host>
+        <port>{${configs.redis_port}}</port>
+        <password>{${configs.redis_password}}</password>
+        <timeout>5000</timeout>
+        <connectionPoolSize>10</connectionPoolSize>
+    </redis.init>
+</localEntry>

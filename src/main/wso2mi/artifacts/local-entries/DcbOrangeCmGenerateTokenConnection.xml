@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localEntry key="DcbOrangeCmGenerateTokenConnection" xmlns="http://ws.apache.org/ns/synapse">
+  <http.init>
+    <connectionType>HTTPS</connectionType>
+    <baseUrl>{${configs.orange_dcb_token_base_url}}</baseUrl>
+    <authType>Basic Auth</authType>
+    <username>{${configs.orange_dcb_client_key}}</username>
+    <password>{${configs.orange_dcb_secret_key}}</password>
+    <timeoutAction>Never</timeoutAction>
+    <retryCount>0</retryCount>
+    <retryDelay>0</retryDelay>
+    <suspendInitialDuration>-1</suspendInitialDuration>
+    <suspendProgressionFactor>1</suspendProgressionFactor>
+    <name>DcbOrangeCmGenerateTokenConnection</name>
+  </http.init>
+</localEntry>
