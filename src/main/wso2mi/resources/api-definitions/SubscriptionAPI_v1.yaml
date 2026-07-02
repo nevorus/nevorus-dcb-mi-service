@@ -1,0 +1,51 @@
+openapi: 3.0.1
+info:
+  title: SubscriptionAPI_v1
+  description: API Definition of SubscriptionAPI_v1
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/subs/v1
+- url: https://localhost:8253/subs/v1
+paths:
+  /subscribe:
+    post:
+      requestBody:
+        description: Sample Payload
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payload:
+                  type: object
+          application/xml:
+            schema:
+              type: object
+              xml:
+                name: payload
+        required: false
+      responses:
+        default:
+          description: Default response
+  /status/{subscriptionId}:
+    get:
+      parameters:
+      - name: subscriptionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response
+  /unsub/{subscriptionId}:
+    delete:
+      parameters:
+      - name: subscriptionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response

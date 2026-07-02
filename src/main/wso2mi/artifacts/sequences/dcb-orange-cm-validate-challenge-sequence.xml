@@ -57,6 +57,12 @@
         <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"]]</headers>
         <requestBodyType>JSON</requestBodyType>
         <requestBodyJson>${payload}</requestBodyJson>
+        <forceScAccepted>false</forceScAccepted>
+        <disableChunking>false</disableChunking>
+        <forceHttp10>false</forceHttp10>
+        <noKeepAlive>false</noKeepAlive>
+        <forcePostPutNobody>false</forcePostPutNobody>
+        <forceHttpContentLength>false</forceHttpContentLength>
     </http.post>
 
     <respond/>

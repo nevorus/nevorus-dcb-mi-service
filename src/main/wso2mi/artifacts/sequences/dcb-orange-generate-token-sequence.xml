@@ -95,15 +95,13 @@
             <redisSeconds>3500</redisSeconds>
         </redis.expire>
 
-        <log level="custom">
-            <property name="redisTokenKey" expression="$ctx:redisTokenKey"/>
-        </log>
-
 
     <log category="INFO">
         <message>dcb-orange-generate-token-sequence - Token obtenu : </message>
         <property name="TOKEN" expression="$ctx:orangeAccessToken"/>
+        <property name="redisTokenKey" expression="$ctx:redisTokenKey"/>
     </log>
+
     </else>
 </filter>
 </sequence>

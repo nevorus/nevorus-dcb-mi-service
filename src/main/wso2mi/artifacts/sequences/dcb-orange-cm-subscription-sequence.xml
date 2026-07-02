@@ -79,8 +79,9 @@
     </payloadFactory>
 
     <log category="INFO">
-        <message>dcb-orange-cm-subscription-sequence - Appel Orange productOrder, userAlias: ${vars.userAlias}</message>
+        <message>dcb-orange-cm-subscription-sequence - Appel Orange productOrder</message>
         <property name="path" expression="get-property('orangeSubRelPath')"/>
+        <property name="userAlias"     expression="json-eval($.user_alias)"/>
     </log>
 
     <log category="INFO">
@@ -92,6 +93,12 @@
         <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"]]</headers>
         <requestBodyType>JSON</requestBodyType>
         <requestBodyJson>${payload}</requestBodyJson>
+        <forceScAccepted>false</forceScAccepted>
+        <disableChunking>false</disableChunking>
+        <forceHttp10>false</forceHttp10>
+        <noKeepAlive>false</noKeepAlive>
+        <forcePostPutNobody>false</forcePostPutNobody>
+        <forceHttpContentLength>false</forceHttpContentLength>
     </http.post>
 
 
@@ -119,7 +126,9 @@
     <property name="orderDate"  expression="json-eval($.orderDate)"  scope="default" type="STRING"/>
 
     <log category="INFO">
-        <message>dcb-orange-cm-subscription-sequence - SUCCES, orderId: ${vars.orderId}, state: $ctx:orderState</message>
+        <message>dcb-orange-cm-subscription-sequence - SUCCES, orderId: </message>
+        <property name="orderId"    expression="json-eval($.id)"></property>
+        <property name="orderState" expression="json-eval($.state)"></property>
     </log>
 
     <property name="HTTP_SC" value="201" scope="axis2"/>

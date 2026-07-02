@@ -19,7 +19,8 @@
 
     <script language="js"><![CDATA[
     var sender  = mc.getProperty("senderAddress");
-    var encoded = sender ? java.net.URLEncoder.encode(sender, "UTF-8").replace(/\+/g,"%20") : "";
+    var encoded = sender ? java.net.URLEncoder.encode(sender, "UTF-8") : "";
+
     mc.setProperty("senderAddressEncoded", encoded);
 
     var alias  = mc.getProperty("userAlias");
@@ -69,10 +70,15 @@
         <headers>[["Content-Type","application/json"],["Authorization","Bearer $ctx:orangeAccessToken"],["X-Orange-ISE2","$ctx:recipientISE2"],["X-Orange-MCO","$ctx:orangeMCO"]]</headers>
         <requestBodyType>JSON</requestBodyType>
         <requestBodyJson>${payload}</requestBodyJson>
+        <forceScAccepted>false</forceScAccepted>
+        <disableChunking>false</disableChunking>
+        <forceHttp10>false</forceHttp10>
+        <noKeepAlive>false</noKeepAlive>
+        <forcePostPutNobody>false</forcePostPutNobody>
+        <forceHttpContentLength>false</forceHttpContentLength>
     </http.post>
 
-    <respond/>
-    <!--
+<!--
     <property name="httpStatus" expression="$axis2:HTTP_SC" scope="default"/>
 
     <filter xpath="get-property('httpStatus') != '201'">
@@ -96,13 +102,18 @@
     <property name="HTTP_SC" value="200" scope="axis2"/>
     <payloadFactory media-type="json">
         <format>{
-            "partnerCode": "$ctx:partnerCode",
-            "country":     "$ctx:country",
-            "operator":    "$ctx:operator",
+            "partnerCode": "$1",
+            "country":     "$2",
+            "operator":    "$3",
             "status":      "sent"
         }</format>
+        <args>
+            <arg expression="$ctx:partnerCode"/>
+            <arg expression="$ctx:country"/>
+            <arg expression="$ctx:operator"/>
+        </args>
     </payloadFactory>
-    -->
+-->
 
-
+    <respond/>
 </sequence>
