@@ -2,7 +2,7 @@ name: Build & Push to Harbor
 
 on:
   push:
-    branches: [ "main", "feature/*", "hotfix/*", "release/*" ]
+    branches: [ "main", "dev", "feature/*", "hotfix/*", "release/*" ]
 
 env:
   DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY_URL }}
@@ -20,59 +20,44 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Necessaire pour acceder a l'historique des tags
+          fetch-depth: 0
 
       - name: Get project info from pom.xml
         id: project-info
         run: |
           ARTIFACT_ID=$(grep -m1 '<artifactId>' pom.xml | sed 's/.*<artifactId>\(.*\)<\/artifactId>.*/\1/')
-          VERSION=$(grep -m1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
           echo "ARTIFACT_ID=$ARTIFACT_ID" >> $GITHUB_OUTPUT
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Compute next version
         id: version
         run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-
-          # Recuperer le dernier tag semver (ex: v1.2.3)
           LATEST_TAG=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)
 
           if [ -z "$LATEST_TAG" ]; then
-            # Aucun tag existant, on part de 0.1.0
-            MAJOR=0
-            MINOR=1
-            PATCH=0
+            MAJOR=0; MINOR=1; PATCH=0
           else
-            # Extraire major.minor.patch du tag
             VERSION="${LATEST_TAG#v}"
             MAJOR=$(echo "$VERSION" | cut -d. -f1)
             MINOR=$(echo "$VERSION" | cut -d. -f2)
             PATCH=$(echo "$VERSION" | cut -d. -f3)
           fi
 
-          # Strategie d'increment selon la branche
           case "$BRANCH_NAME" in
             main)
-              # Release : increment minor, reset patch
-              MINOR=$((MINOR + 1))
-              PATCH=0
+              MINOR=$((MINOR + 1)); PATCH=0
               NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
               ;;
             release/*)
-              # Release candidate : increment minor
-              MINOR=$((MINOR + 1))
-              PATCH=0
+              MINOR=$((MINOR + 1)); PATCH=0
               RC_NAME=$(echo "$BRANCH_NAME" | sed 's|release/||')
               NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}-rc.${RC_NAME}"
               ;;
             hotfix/*)
-              # Hotfix : increment patch
               PATCH=$((PATCH + 1))
               NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
               ;;
-            develop|dev|feature/*)
-              # Dev/Feature : increment patch + suffixe snapshot
+            dev|feature/*)
               PATCH=$((PATCH + 1))
               SHORT_SHA=$(git rev-parse --short HEAD)
               NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}-dev.${SHORT_SHA}"
@@ -91,7 +76,6 @@ jobs:
       - name: Update pom.xml version
         run: |
           sed -i "0,/<version>.*<\/version>/s|<version>.*</version>|<version>${{ steps.version.outputs.VERSION }}</version>|" pom.xml
-          echo "pom.xml updated to version ${{ steps.version.outputs.VERSION }}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -112,16 +96,16 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: |
-            ${{ env.DOCKER_REGISTRY }}/${{ steps.project-info.outputs.ARTIFACT_ID }}:${{ steps.project-info.outputs.VERSION }}
+            ${{ env.DOCKER_REGISTRY }}/${{ steps.project-info.outputs.ARTIFACT_ID }}:${{ steps.version.outputs.VERSION }}
             ${{ env.DOCKER_REGISTRY }}/${{ steps.project-info.outputs.ARTIFACT_ID }}:latest
 
       - name: Update Helm values and chart version
         run: |
           sed -i "s|^\( *repository:\).*|\1 $DOCKER_REGISTRY/${{ steps.project-info.outputs.ARTIFACT_ID }}|" ./k8s/values.yaml
-          sed -i "s|^\( *tag:\).*|\1 \"${{ steps.project-info.outputs.VERSION }}\"|" ./k8s/values.yaml
-          sed -i "s|^\(appVersion:\).*|\1 \"${{ steps.project-info.outputs.VERSION }}\"|" ./k8s/Chart.yaml
+          sed -i "s|^\( *tag:\).*|\1 \"${{ steps.version.outputs.VERSION }}\"|" ./k8s/values.yaml
+          sed -i "s|^\(appVersion:\).*|\1 \"${{ steps.version.outputs.VERSION }}\"|" ./k8s/Chart.yaml
 
-      - name: Commit and push updated Helm files
+      - name: Commit and push updated files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -130,11 +114,17 @@ jobs:
 
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
 
-          if git diff --quiet ./k8s/values.yaml ./k8s/Chart.yaml; then
-            echo "Aucun changement Helm a committer."
+          if git diff --quiet ./k8s/values.yaml ./k8s/Chart.yaml pom.xml; then
+            echo "Aucun changement à committer."
             exit 0
           fi
 
-          git add ./k8s/values.yaml ./k8s/Chart.yaml
-          git commit -m "CI: Update Helm chart for ${{ steps.project-info.outputs.ARTIFACT_ID }}:${{ steps.project-info.outputs.VERSION }}"
+          git add ./k8s/values.yaml ./k8s/Chart.yaml pom.xml
+          git commit -m "CI: Update Helm chart and pom.xml for ${{ steps.project-info.outputs.ARTIFACT_ID }}:${{ steps.version.outputs.VERSION }}"
           git push "https://x-access-token:$GITHUB_TOKEN@github.com/${{ github.repository }}.git" "HEAD:$BRANCH_NAME"
+
+      - name: Create Git tag
+        run: |
+          git tag "v${{ steps.version.outputs.VERSION }}"
+          git push "https://x-access-token:$GITHUB_TOKEN@github.com/${{ github.repository }}.git" \
+            "v${{ steps.version.outputs.VERSION }}"
