@@ -70,13 +70,13 @@
 
     <property name="tokenHttpStatus" expression="$axis2:HTTP_SC" scope="default"/>
 
-    <filter xpath="$ctx:tokenHttpStatus != '200'">
+    <!--<filter xpath="$ctx:tokenHttpStatus != '200'">
         <then>
             <variable name="errorCode"    expression="${'TOKEN_GENERATION_FAILED'}"                                               type="STRING"/>
             <variable name="errorMessage" expression="${'Orange token generation failed. HTTP: ' + vars.tokenHttpStatus}"        type="STRING"/>
             <sequence key="dcb-global-error-handler-sequence"/>
         </then>
-    </filter>
+    </filter>-->
 
     <property name="orangeAccessToken"
               expression="json-eval($.access_token)"
