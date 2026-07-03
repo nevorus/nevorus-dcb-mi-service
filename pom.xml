@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nevorus</groupId>
     <artifactId>nakopay-mi</artifactId>
-    <version>1.0.0</version>
+    <version>0.2.0-rc.dcb-mi-services</version>
     <packaging>pom</packaging>
     <name>nakopay-mi-v8</name>
     <description>NAKOPAY - Micro-Integrateur DCB (Orange southbound adapters)</description>
