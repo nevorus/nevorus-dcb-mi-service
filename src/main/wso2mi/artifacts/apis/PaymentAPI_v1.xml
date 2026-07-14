@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<api context="/mi/payment/v1" name="PaymentAPI_v1" xmlns="http://ws.apache.org/ns/synapse">
+<api context="/payment/mi/v1" name="PaymentAPI_v1" xmlns="http://ws.apache.org/ns/synapse">
 
     <!-- POST /payment/v1/payment → paiement DCB synchrone -->
     <resource methods="POST" uri-template="/payment">
