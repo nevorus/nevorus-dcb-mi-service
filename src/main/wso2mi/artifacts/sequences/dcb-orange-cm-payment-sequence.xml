@@ -89,28 +89,28 @@
     <!-- DCB synchrone : on accepte 200 ET 201 comme succès Orange -->
     <filter xpath="$ctx:httpStatus != '201' and $ctx:httpStatus != '200'">
         <then><respond/>
-            <filter xpath="$ctx:httpStatus = '403'">
-                <then>
-                    <log category="WARN">
-                        <property name="msg" value="dcb-orange-cm-payment-sequence - CREDIT INSUFFISANT"/>
-                    </log>
-                    <variable name="errorCode"    expression="${'PAYMENT_INSUFFICIENT_FUNDS'}" type="STRING"/>
-                    <variable name="errorMessage" expression="${payload.requestError.policyException.text}" type="STRING"/>
-                </then>
-                <else>
-                    <log category="ERROR">
-                        <property name="msg"        value="dcb-orange-cm-payment-sequence - ECHEC Orange"/>
-                        <property name="httpStatus" expression="$ctx:httpStatus"/>
-                    </log>
-                    <variable name="errorCode"    expression="${'PAYMENT_FAILED'}" type="STRING"/>
-                    <variable name="errorMessage" expression="${payload.requestError.serviceException.text}" type="STRING"/>
-                </else>
-            </filter>
-            <sequence key="dcb-global-error-handler-sequence"/>
-        </then>
-    </filter>
+    <!-- <filter xpath="$ctx:httpStatus = '403'">
+         <then>
+             <log category="WARN">
+                 <property name="msg" value="dcb-orange-cm-payment-sequence - CREDIT INSUFFISANT"/>
+             </log>
+             <variable name="errorCode"    expression="${'PAYMENT_INSUFFICIENT_FUNDS'}" type="STRING"/>
+             <variable name="errorMessage" expression="${payload.requestError.policyException.text}" type="STRING"/>
+         </then>
+         <else>
+             <log category="ERROR">
+                 <property name="msg"        value="dcb-orange-cm-payment-sequence - ECHEC Orange"/>
+                 <property name="httpStatus" expression="$ctx:httpStatus"/>
+             </log>
+             <variable name="errorCode"    expression="${'PAYMENT_FAILED'}" type="STRING"/>
+             <variable name="errorMessage" expression="${payload.requestError.serviceException.text}" type="STRING"/>
+         </else>
+     </filter>
+     <sequence key="dcb-global-error-handler-sequence"/> -->
+ </then>
+</filter>
 
-    <!-- Récupération des infos retournées par Orange -->
+<!-- Récupération des infos retournées par Orange -->
     <property name="serverReferenceCode" expression="json-eval($.amountTransaction.serverReferenceCode)" scope="default" type="STRING"/>
 
     <log category="INFO">
