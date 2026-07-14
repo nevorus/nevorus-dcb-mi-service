@@ -27,6 +27,7 @@
 
     <log category="INFO">
         <message>dcb-orange-generate-token-sequence - Résultat brut Redis : </message>
+        <property name="cachedToken" expression="json-eval($)"/>
     </log>
 
     <property name="cachedToken"

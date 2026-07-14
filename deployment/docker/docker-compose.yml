@@ -69,5 +69,17 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  # --- Kafka UI ---
+  nakopay-kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: nakopay-kafka-ui
+    ports:
+      - "8082:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=nakopay-dev
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=35.181.59.209:9091,35.181.59.209:9092,35.181.59.209:9093
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=35.181.59.209:2181
+    restart: on-failure
+
 volumes:
   redis_data:

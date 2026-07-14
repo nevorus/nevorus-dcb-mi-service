@@ -6,6 +6,7 @@
         <property name="operator" expression="get-property('operator')"/>
     </log>
 
+
     <switch source="$ctx:country">
         <case regex="cm">
             <sequence key="dcb-cm-config-sequence"/>
