@@ -45,29 +45,28 @@ jobs:
 
           case "$BRANCH_NAME" in
             main)
-              MINOR=$((MINOR + 1)); PATCH=0
+              MINOR=$((MINOR + 1))
+              PATCH=0
               NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
               ;;
             release/*)
-              MINOR=$((MINOR + 1)); PATCH=0
-              RC_NAME=$(echo "$BRANCH_NAME" | sed 's|release/||')
-              NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}-rc.${RC_NAME}"
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
               ;;
             hotfix/*)
               PATCH=$((PATCH + 1))
               NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
               ;;
-            dev|feature/*)
+            develop|dev|feature/*)
               PATCH=$((PATCH + 1))
-              SHORT_SHA=$(git rev-parse --short HEAD)
-              NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}-dev.${SHORT_SHA}"
+              NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
               ;;
             *)
               PATCH=$((PATCH + 1))
-              SHORT_SHA=$(git rev-parse --short HEAD)
-              NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}-dev.${SHORT_SHA}"
+              NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
               ;;
-          esac
+            esac
 
           echo "VERSION=$NEXT_VERSION" >> $GITHUB_OUTPUT
           echo "BRANCH=$BRANCH_NAME" >> $GITHUB_OUTPUT
