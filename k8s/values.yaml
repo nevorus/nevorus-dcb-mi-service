@@ -129,6 +129,9 @@ env:
   orange_dcb_token_base_url: https://gateway-st2i.nevorus.com:443
   orange_dcb_client_key: dGVzdDp0ZXN0
   orange_dcb_secret_key: dGVzdDp0ZXN0
-  redis_host: 2.tcp.eu.ngrok.io
-  redis_port: 18770
+  #redis_host: 2.tcp.eu.ngrok.io
+  #redis_port: 18770
+  #redis_password: passer
+  redis_host: 35.181.59.209
+  redis_port: 6379
   redis_password: passer
