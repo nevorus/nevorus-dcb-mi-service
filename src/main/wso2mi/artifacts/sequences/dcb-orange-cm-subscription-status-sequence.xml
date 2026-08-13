@@ -51,16 +51,16 @@
     <property name="HTTP_SC" value="200" scope="axis2"/>
     <payloadFactory media-type="json">
         <format>{
-            "subscription-id": "$1",
-            "subscription-status": "$2",
-            "user-id": "$3",
-            "sp-id": "$4",
-            "product-id": "$5",
+            "subscription_id": "$1",
+            "state": "$2",
+            "customer_id": "$3",
+            "retailer_name": "$4",
+            "product_id": "$5",
             "country": "$6",
             "periodicity": "$7",
             "amount": "$8",
             "currency": "$9",
-            "subscription-startdate": "$10",
+            "subscription_startdate": "$10",
             "lang": "$11",
             "country": "$12"
             }</format>

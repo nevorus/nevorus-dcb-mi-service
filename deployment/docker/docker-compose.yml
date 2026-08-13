@@ -63,10 +63,11 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - REDIS_HOSTS=local:nakopay-redis:6379:0:passer
-    depends_on:
-      nakopay-redis:
-        condition: service_healthy
+      #- REDIS_HOSTS=local:nakopay-redis:6379:0:passer
+      - REDIS_HOSTS=local:35.181.59.209:6379
+    #depends_on:
+      #nakopay-redis:
+        #condition: service_healthy
     restart: on-failure
 
   # --- Kafka UI ---
