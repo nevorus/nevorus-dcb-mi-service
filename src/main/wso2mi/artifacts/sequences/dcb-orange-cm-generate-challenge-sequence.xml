@@ -70,6 +70,14 @@
         var loc = mc.getProperty("locationHeader");
         var id  = (loc && loc !== "null") ? loc.split("/").pop() : "UNKNOWN";
         mc.setVariable("challengeId", id);
+    ]]>
+    </script>
+    <script language="js"><![CDATA[
+    var response = mc.getPayloadJSON();
+    if (response.challenge) {
+        response.challenge.country = mc.getProperty("country");
+    }
+    mc.setPayloadJSON(response);
     ]]></script>
 
     <log category="INFO">

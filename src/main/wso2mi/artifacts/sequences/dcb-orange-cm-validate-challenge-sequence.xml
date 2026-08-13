@@ -65,6 +65,14 @@
         <forceHttpContentLength>false</forceHttpContentLength>
     </http.post>
 
+    <script language="js"><![CDATA[
+    var response = mc.getPayloadJSON();
+    if (response.challenge) {
+        response.challenge.country = mc.getProperty("country");
+    }
+    mc.setPayloadJSON(response);
+    ]]></script>
+
     <respond/>
     <!--
     <property name="httpStatus" expression="get-property('axis2', 'HTTP_SC')" scope="default"/>
