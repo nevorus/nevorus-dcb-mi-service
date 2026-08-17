@@ -60,7 +60,7 @@
             "periodicity": "$7",
             "amount": "$8",
             "currency": "$9",
-            "subscription_start_date": "$10",
+            "sub_start_date": "$10",
             "lang": "$11",
             "operator": "$12",
             }</format>
