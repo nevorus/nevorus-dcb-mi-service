@@ -62,7 +62,7 @@
             "currency": "$9",
             "sub_start_date": "$10",
             "lang": "$11",
-            "operator": "$12",
+            "operator": "$12"
             }</format>
 
         <args>
