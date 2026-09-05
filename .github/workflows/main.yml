@@ -1,0 +1,89 @@
+# Build & push vers ghcr — modules Micro Integrator dont le Dockerfile est
+# autonome : task-engine et dcb-mi-service.
+#
+# Leur Dockerfile est multi-étapes comme celui des services Java — maven
+# construit le .car, l'image finale part de wso2/wso2mi — à ceci près qu'il vit
+# dans deployment/docker/ et non à la racine.
+name: Build & Push to ghcr
+
+on:
+  push:
+    # dcb-mi-service vit sur release/dcb-mi-services, pas sur main : sans ce
+    # second motif, son workflow ne se déclencherait jamais.
+    branches: ["main", "release/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Lire la version du pom.xml
+        id: version
+        run: |
+          v=$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
+          root = ET.parse('pom.xml').getroot()
+          # Comparaison explicite à None : un Element sans enfant est falsy.
+          node = root.find('m:version', ns)
+          if node is None:
+              node = root.find('version')
+          print(node.text.strip())
+          PY
+          )
+          echo "current=$v" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Login ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deployment/docker/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ steps.version.outputs.image }}:${{ steps.version.outputs.current }}
+            ${{ steps.version.outputs.image }}:${{ github.sha }}
+            ${{ steps.version.outputs.image }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Bump de version patch
+        run: |
+          cur="${{ steps.version.outputs.current }}"
+          new=$(echo "$cur" | awk -F. '{OFS="."; $NF+=1; print}')
+          python3 - "$cur" "$new" <<'PY'
+          import sys
+          cur, new = sys.argv[1], sys.argv[2]
+          src = open('pom.xml').read()
+          src = src.replace(f'<version>{cur}</version>', f'<version>{new}</version>', 1)
+          open('pom.xml', 'w').write(src)
+          PY
+          git config user.email "elhadjiserigne.toure@nevorus.com"
+          git config user.name "hadj92"
+          git add pom.xml
+          git commit -m "CI: bump ${cur} → ${new}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
